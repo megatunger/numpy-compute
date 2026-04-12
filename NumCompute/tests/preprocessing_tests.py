@@ -83,24 +83,43 @@ class TestMinMaxScaler(unittest.TestCase):
         np.testing.assert_allclose(fit_transform, fit_then_transform)
 
 
-# class TestOneHotEncoder(unittest.TestCase):
-#     def setUp(self):
-#         self.X_cat = np.array([["red", "S"], ["blue", "M"]], dtype=object)
+class TestOneHotEncoder(unittest.TestCase):
+    def setUp(self):
+        # Two columns of categorical data
+        self.X_cat = np.array([["red", "S"], ["blue", "M"]], dtype=object)
 
-#     def test_fit_requires_2d(self):
-#         enc = OneHotEncoder()
-#         with self.assertRaises(ValueError):
-#             enc.fit(np.array(["red", "blue"], dtype=object))
+    def test_fit_requires_2d(self):
+        enc = OneHotEncoder()
+        with self.assertRaises(ValueError):
+            enc.fit(np.array(["red", "blue"], dtype=object))
 
-#     def test_fit_not_implemented_yet(self):
-#         enc = OneHotEncoder()
-#         with self.assertRaises(NotImplementedError):
-#             enc.fit(self.X_cat)
+    def test_fit_finds_categories(self):
+        enc = OneHotEncoder()
+        enc.fit(self.X_cat)
+        # It should find unique values for each column and sort them
+        # Col 0: 'blue', 'red'
+        # Col 1: 'M', 'S'
+        self.assertEqual(len(enc.categories_), 2)
+        np.testing.assert_array_equal(enc.categories_[0], ["blue", "red"])
+        np.testing.assert_array_equal(enc.categories_[1], ["M", "S"])
 
-#     def test_transform_requires_fit(self):
-#         enc = OneHotEncoder()
-#         with self.assertRaises(ValueError):
-#             enc.transform(self.X_cat)
+    def test_transform_encodes_correctly(self):
+        enc = OneHotEncoder()
+        enc.fit(self.X_cat)
+        transformed = enc.transform(self.X_cat)
+        
+        # 'red' is index 1 of Col 0, 'S' is index 1 of Col 1 -> [0, 1, 0, 1]
+        # 'blue' is index 0 of Col 0, 'M' is index 0 of Col 1 -> [1, 0, 1, 0]
+        expected = np.array([
+            [0.0, 1.0, 0.0, 1.0],
+            [1.0, 0.0, 1.0, 0.0]
+        ])
+        np.testing.assert_array_equal(transformed, expected)
+
+    def test_transform_requires_fit(self):
+        enc = OneHotEncoder()
+        with self.assertRaises(ValueError):
+            enc.transform(self.X_cat)
 
 
 class TestSimpleImputer(unittest.TestCase):

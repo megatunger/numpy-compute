@@ -70,13 +70,24 @@ class OneHotEncoder:
         X = np.asarray(X)
         if X.ndim != 2:
             raise ValueError("OneHotEncoder expects 2D input.")
-        raise NotImplementedError("Implement category discovery per feature.")
+        n_cols = X.shape[1]
+        self.categories_ = [np.unique(X[:, i]) for i in range(n_cols)]
+        return self
 
     def transform(self, X):
         X = np.asarray(X)
         if self.categories_ is None:
             raise ValueError("OneHotEncoder is not fitted. Call fit() first.")
-        raise NotImplementedError("Implement one-hot encoding transformation.")
+        encoded_columns = []
+        
+        for i in range(X.shape[1]):
+            cats = self.categories_[i]
+            col_data = X[:, [i]]
+            
+            one_hot_col = (col_data == cats).astype(float)
+            encoded_columns.append(one_hot_col)
+        
+        return np.hstack(encoded_columns)
 
     def fit_transform(self, X, y=None):
         return self.fit(X, y).transform(X)
