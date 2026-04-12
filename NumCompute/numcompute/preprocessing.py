@@ -37,18 +37,23 @@ class MinMaxScaler:
         self.feature_range = feature_range
         self.data_min_ = None
         self.data_range_ = None
+        self.data_max_ = None
 
     def fit(self, X, y=None):
         X = np.asarray(X, dtype=float)
         if X.ndim != 2:
             raise ValueError("MinMaxScaler expects 2D input.")
-        raise NotImplementedError("Implement data_min_ and data_range_ computation.")
+        self.data_min_ = np.min(X, axis=0)
+        self.data_max_ = np.max(X, axis=0)
+        self.data_range_ = self.data_max_ - self.data_min_
+        return self
 
     def transform(self, X):
         X = np.asarray(X, dtype=float)
         if self.data_min_ is None or self.data_range_ is None:
             raise ValueError("MinMaxScaler is not fitted. Call fit() first.")
-        raise NotImplementedError("Implement min-max scaling transformation.")
+        X_scaled = (X - self.data_min_) / self.data_range_
+        return X_scaled
 
     def fit_transform(self, X, y=None):
         return self.fit(X, y).transform(X)
