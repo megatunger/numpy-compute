@@ -83,20 +83,25 @@ class OneHotEncoder:
 
 
 class SimpleImputer:
-    def __init__(self, fill_value=0.0):
-        self.fill_value = fill_value
+    def __init__(self, strategy = 'mean'):
+        if strategy not in ('mean'):
+            raise NotImplementedError("This strategy has not been supported yet")
+        self.statistics_ = None
 
     def fit(self, X, y=None):
         X = np.asarray(X, dtype=float)
         if X.ndim != 2:
             raise ValueError("SimpleImputer expects 2D input.")
+        self.statistics_ = np.nanmean(X, axis=0)
         return self
 
     def transform(self, X):
         X = np.asarray(X, dtype=float)
         if X.ndim != 2:
             raise ValueError("SimpleImputer expects 2D input.")
-        raise NotImplementedError("Implement NaN replacement with fill_value.")
+        X_filled = np.copy(X)
+        X_filled = np.where(np.isnan(X), self.statistics_, X)
+        return X_filled
 
     def fit_transform(self, X, y=None):
         return self.fit(X, y).transform(X)

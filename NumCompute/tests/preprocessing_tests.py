@@ -103,24 +103,48 @@ class TestMinMaxScaler(unittest.TestCase):
 #             enc.transform(self.X_cat)
 
 
-# class TestSimpleImputer(unittest.TestCase):
-#     def setUp(self):
-#         self.X_num = np.array([[1.0, 2.0], [3.0, 4.0]])
+class TestSimpleImputer(unittest.TestCase):
+    def setUp(self):
+        self.X_num = np.array([[1.0, 2.0], [3.0, 4.0]])
 
-#     def test_fit_returns_self(self):
-#         imp = SimpleImputer(fill_value=0.0)
-#         out = imp.fit(self.X_num)
-#         self.assertIs(out, imp)
+    def test_fit_returns_self(self):
+        imp = SimpleImputer(strategy='mean')
+        out = imp.fit(self.X_num)
+        self.assertIs(out, imp)
 
-#     def test_fit_requires_2d(self):
-#         imp = SimpleImputer()
-#         with self.assertRaises(ValueError):
-#             imp.fit(np.array([1.0, np.nan, 3.0]))
+    def test_fit_requires_2d(self):
+        imp = SimpleImputer(strategy='mean')
+        with self.assertRaises(ValueError):
+            imp.fit(np.array([1.0, np.nan, 3.0]))
 
-#     def test_transform_not_implemented_yet(self):
-#         imp = SimpleImputer(fill_value=0.0).fit(self.X_num)
-#         with self.assertRaises(NotImplementedError):
-#             imp.transform(self.X_num)
+    def test_transform_fills_nans_with_mean(self):
+        # Column 0: values are 1.0, np.nan, 5.0 -> Mean = 3.0
+        # Column 1: values are np.nan, 4.0, 6.0 -> Mean = 5.0
+        imp = SimpleImputer(strategy='mean')
+        X_with_nan = np.array([
+            [1.0, np.nan],
+            [np.nan, 4.0],
+            [5.0, 6.0]
+        ])
+        
+        imp.fit(X_with_nan)
+        transformed = imp.transform(X_with_nan)
+        
+        expected = np.array([
+            [1.0, 5.0],
+            [3.0, 4.0],
+            [5.0, 6.0]
+        ])
+        np.testing.assert_array_equal(transformed, expected)
+
+    def test_fit_transform_works(self):
+        imp = SimpleImputer(strategy='mean')
+        X_with_nan = np.array([[np.nan, 2.0], [3.0, 4.0]])
+        
+        fit_then_transform = imp.fit(X_with_nan).transform(X_with_nan)
+        fit_transform = SimpleImputer(strategy='mean').fit_transform(X_with_nan)
+        
+        np.testing.assert_array_equal(fit_transform, fit_then_transform)
 
 
 # class TestPreprocessingConstructorValidation(unittest.TestCase):
