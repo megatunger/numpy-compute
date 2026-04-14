@@ -53,24 +53,24 @@ print(multi_key_sort(data, [0, 1]))
 
 ### QUICKSELECT
 
-def select(arr, left, right, k):
+def select(a: list, left: int, right: int, k: int) -> int | float:
     if left == right:
-        return arr[left]
+        return a[left]
 
-    pivot = arr[right]
+    pivot = a[right]
     temp = left
     for i in range(left, right):
-        if arr[i] <= pivot:
-            arr[i], arr[temp] = arr[temp], arr[i]
+        if a[i] <= pivot:
+            a[i], a[temp] = a[temp], a[i]
             temp += 1
-    arr[temp], arr[right] = arr[right], arr[temp]
+    a[temp], a[right] = a[right], a[temp]
 
     if k == temp:
-        return arr[temp]
+        return a[temp]
     elif k < temp:
-        return select(arr, left, temp - 1, k)
+        return select(a, left, temp - 1, k)
     else:
-        return select(arr, temp + 1, right, k)
+        return select(a, temp + 1, right, k)
 
 def quickselect(a: np.ndarray, k: int) -> int | float:
     """
