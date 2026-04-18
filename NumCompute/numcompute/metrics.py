@@ -5,32 +5,65 @@ import numpy as np
 def accuracy(y_true : np.ndarray, y_pred : np.ndarray) -> float:
     """Accuracy classification score.
 
-    Args:
-        y_true (np.ndarray): one-hot array of shape [C,...], where C is the number of classes
-        y_pred (np.ndarray): one-hot array of shape [C,...], where C is the number of classes, must be the same shape as y_true
+    In multilabel classification, this function computes subset accuracy:
+    the set of labels predicted for a sample must *exactly* match the
+    corresponding set of labels in y_true.
 
-    Returns:
-        accuracy (np.ndarray): 1d-array of shape [C]: accuracy for each class
+    Parameters
+    ----------
+    y_true : 1d array-like, or label indicator array
+        Ground truth (correct) labels.
+
+    y_pred : 1d array-like, or label indicator array
+        Predicted labels, as returned by a classifier.
+
+    Returns
+    -------
+    score : float
     """
-    assert y_true.shape == y_pred.shape
+    assert y_true.ndim == 1 and y_pred.ndim == 1 
+    assert y_true.shape == y_pred.shape and y_true.dtype == y_pred.dtype
 
-    C = y_true.shape[0]
-    y_true = y_true.reshape(C, -1)
-    y_pred = y_pred.reshape(C, -1)
-    N = y_true.shape[-1]
-    acc = (y_true == y_pred).astype(np.float32) / N
+    acc = (y_true == y_pred).astype(np.float32)
 
-    return float(acc)
+    return float(acc.mean())
 
 def precision(y_true : np.ndarray, y_pred : np.ndarray) -> float:
-    """Precision classification score.
+    """Compute the precision.
 
-    Args:
-        y_true (np.ndarray): one-hot array of shape [C,...], where C is the number of classes
-        y_pred (np.ndarray): one-hot array of shape [C,...], where C is the number of classes, must be the same shape as y_true
+    The precision is the ratio ``tp / (tp + fp)`` where ``tp`` is the number of
+    true positives and ``fp`` the number of false positives. The precision is
+    intuitively the ability of the classifier not to label as positive a sample
+    that is negative.
 
-    Returns:
-        precision (np.ndarray): 1d-array of shape [C]: precision (TP/TP + FN) for each class
+    The best value is 1 and the worst value is 0.
+
+    Support beyond :term:`binary` targets is achieved by treating :term:`multiclass`
+    and :term:`multilabel` data as a collection of binary problems, one for each
+    label. For the :term:`binary` case, setting `average='binary'` will return
+    precision for `pos_label`. If `average` is not `'binary'`, `pos_label` is ignored
+    and precision for both classes are computed, then averaged or both returned (when
+    `average=None`). Similarly, for :term:`multiclass` and :term:`multilabel` targets,
+    precision for all `labels` are either returned or averaged depending on the
+    `average` parameter. Use `labels` specify the set of labels to calculate precision
+    for.
+
+    Read more in the :ref:`User Guide <precision_recall_f_measure_metrics>`.
+
+    Parameters
+    ----------
+    y_true : 1d array-like, or label indicator array / sparse matrix
+        Ground truth (correct) target values. Sparse matrix is only supported when
+        targets are of :term:`multilabel` type.
+
+    y_pred : 1d array-like, or label indicator array / sparse matrix
+        Estimated targets as returned by a classifier. Sparse matrix is only
+        supported when targets are of :term:`multilabel` type.
+    Returns
+    -------
+    precision : float (if average is not None) or array of float of shape (n_unique_labels,)
+        Precision of the positive class in binary classification or weighted
+        average of the precision of each class for the multiclass task.
     """
     assert y_true.shape == y_pred.shape
 
