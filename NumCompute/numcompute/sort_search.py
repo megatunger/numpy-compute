@@ -42,7 +42,7 @@ def topk(a: np.ndarray, k: int, largest: bool = True, return_indices: bool = Tru
 
 
 ### SEARCH
-def binary_search(a: np.ndarray, x: int | float) -> tuple[int, bool]:
+def binary_search(a: np.ndarray, x: Union[int, float]) -> tuple[int, bool]:
     """
     Currently inserts to the left, if the same value is already in the array.
     """
@@ -55,7 +55,7 @@ def binary_search(a: np.ndarray, x: int | float) -> tuple[int, bool]:
 
 ### QUICKSELECT
 
-def select(a: list, left: int, right: int, k: int) -> int | float:
+def select(a: list, left: int, right: int, k: int) -> Union[int, float]:
     if left == right:
         return a[left]
 
@@ -79,7 +79,7 @@ def select(a: list, left: int, right: int, k: int) -> int | float:
     else:
         return select(a, mid, right, k)
 
-def quickselect(a: np.ndarray, k: int) -> int | float:
+def quickselect(a: np.ndarray, k: int) -> Union[int, float]:
     """
     """
     a = a.tolist()  
