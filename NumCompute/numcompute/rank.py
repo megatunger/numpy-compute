@@ -2,12 +2,9 @@ import numpy as np
 
 def rank(a: np.ndarray, method: str='average') -> np.ndarray:
 
-    ranks = np.empty(a.size)
-
     # ranks ties based on order of appearance
     if method == 'ordinal':
         order = np.argsort(a, kind='stable')
-        print(order)
         return np.argsort(order, kind='stable') + 1
 
     a_sorted, ranks, counts = np.unique(a, return_inverse=True, return_counts=True)
