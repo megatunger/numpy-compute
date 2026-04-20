@@ -1,4 +1,5 @@
 import numpy as np
+from typing import Union
 
 def rank(a: np.ndarray, method: str='average') -> np.ndarray:
 
@@ -33,7 +34,7 @@ def rank(a: np.ndarray, method: str='average') -> np.ndarray:
 # print(rank(a, 'average'))
 # print(a)
 
-def percentile(a: np.ndarray, q, interpolation: str='linear') -> np.ndarray | np.floating:
+def percentile(a: np.ndarray, q, interpolation: str='linear') -> Union[np.ndarray, np.floating]:
     
     methods = ['linear', 'lower', 'higher', 'midpoint']
     if interpolation not in methods:

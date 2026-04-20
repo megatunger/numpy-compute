@@ -1,4 +1,5 @@
 import numpy as np
+from typing import Union
 
 ### SORTING
 
@@ -17,7 +18,7 @@ def multi_key_sort(a: np.ndarray, columns: list[int]) -> np.ndarray:
 
 ### TOP K
 
-def topk(a: np.ndarray, k: int, largest: bool = True, return_indices: bool = True) -> tuple[np.ndarray, np.ndarray] | np.ndarray:
+def topk(a: np.ndarray, k: int, largest: bool = True, return_indices: bool = True) -> Union[tuple[np.ndarray, np.ndarray], np.ndarray]:
     # argparition is O(n)
 
     indices = []
