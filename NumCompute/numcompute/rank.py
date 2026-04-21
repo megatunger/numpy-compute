@@ -1,13 +1,11 @@
 import numpy as np
+from typing import Union
 
 def rank(a: np.ndarray, method: str='average') -> np.ndarray:
-
-    ranks = np.empty(a.size)
 
     # ranks ties based on order of appearance
     if method == 'ordinal':
         order = np.argsort(a, kind='stable')
-        print(order)
         return np.argsort(order, kind='stable') + 1
 
     a_sorted, ranks, counts = np.unique(a, return_inverse=True, return_counts=True)
@@ -36,7 +34,7 @@ def rank(a: np.ndarray, method: str='average') -> np.ndarray:
 # print(rank(a, 'average'))
 # print(a)
 
-def percentile(a: np.ndarray, q, interpolation: str='linear') -> np.ndarray | np.floating:
+def percentile(a: np.ndarray, q, interpolation: str='linear') -> Union[np.ndarray, np.floating]:
     
     methods = ['linear', 'lower', 'higher', 'midpoint']
     if interpolation not in methods:

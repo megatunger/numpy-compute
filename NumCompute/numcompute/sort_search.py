@@ -1,4 +1,5 @@
 import numpy as np
+from typing import Union
 
 ### SORTING
 
@@ -17,7 +18,8 @@ def multi_key_sort(a: np.ndarray, columns: list[int]) -> np.ndarray:
 
 ### TOP K
 
-def topk(a: np.ndarray, k: int, largest: bool = True, return_indices: bool = True) -> tuple[np.ndarray, np.ndarray] | np.ndarray:
+def topk(a: np.ndarray, k: int, largest: bool = True, return_indices: bool = True) -> Union[tuple[np.ndarray, np.ndarray], np.ndarray]:
+    # argparition is O(n)
 
     indices = []
     order = []
@@ -40,7 +42,7 @@ def topk(a: np.ndarray, k: int, largest: bool = True, return_indices: bool = Tru
 
 
 ### SEARCH
-def binary_search(a: np.ndarray, x: int | float) -> tuple[int, bool]:
+def binary_search(a: np.ndarray, x: Union[int, float]) -> tuple[int, bool]:
     """
     Currently inserts to the left, if the same value is already in the array.
     """
@@ -48,31 +50,36 @@ def binary_search(a: np.ndarray, x: int | float) -> tuple[int, bool]:
     index = np.searchsorted(a, x)
     return (int(index), index >= 0 and index < len(a) and a[index] == x)
 
-data = np.array([[3, 2], [1, 5], [1, 3], [2, 4]])
-print(multi_key_sort(data, [0, 1]))
+# data = np.array([[3, 2], [1, 5], [1, 3], [2, 4]])
+# print(multi_key_sort(data, [0, 1]))
 
 ### QUICKSELECT
 
-def select(a: list, left: int, right: int, k: int) -> int | float:
+def select(a: list, left: int, right: int, k: int) -> Union[int, float]:
     if left == right:
         return a[left]
 
-    pivot = a[right]
+    pivot = a[np.random.randint(left, right)]
     temp = left
-    for i in range(left, right):
-        if a[i] <= pivot:
-            a[i], a[temp] = a[temp], a[i]
-            temp += 1
-    a[temp], a[right] = a[right], a[temp]
-
-    if k == temp:
-        return a[temp]
-    elif k < temp:
-        return select(a, left, temp - 1, k)
+    low, mid, high = left, left, right
+    while mid <= high:
+        if a[mid] < pivot:
+            a[low], a[mid] = a[mid], a[low]
+            low += 1
+            mid += 1
+        elif a[mid] == pivot:
+            mid += 1
+        else:
+            a[mid], a[high] = a[high], a[mid]
+            high -= 1
+    if low <= k <= mid - 1:
+        return a[k]
+    elif k < low:
+        return select(a, left, low - 1, k)
     else:
-        return select(a, temp + 1, right, k)
+        return select(a, mid, right, k)
 
-def quickselect(a: np.ndarray, k: int) -> int | float:
+def quickselect(a: np.ndarray, k: int) -> Union[int, float]:
     """
     """
     a = a.tolist()  
