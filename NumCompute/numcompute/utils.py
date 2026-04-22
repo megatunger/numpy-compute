@@ -50,21 +50,8 @@ def linear(a: np.ndarray) -> np.ndarray:
 
 ### INPUT VALIDATION
 
-
 def validate_array_like(a, name="input"):
-    """Validate if an object is convertible to np.ndarray
-
-    Args:
-        a : Any
-            Target object to validate
-            
-        name : str, default='input'.
-            Object name for error logging
-
-    Returns:
-        a : np.ndarray
-            Target object converted to np.ndarray 
-    """
+    """Validate if an object is convertible to np.ndarray"""
     try:
         a = np.asanyarray(a)
     except ValueError as e:
@@ -73,16 +60,21 @@ def validate_array_like(a, name="input"):
         )
     else:
         return a
+    
+def validate_non_empty_array(a, name="input"):
+    """Validate if array is non-empty"""
+    if not (a.size > 0):
+        raise ValueError(f"Expect {name} to be non-empty array")
+
+    return a
 
 def validate_metrics_array(y_true, y_pred):
-    y_true = validate_array_like(y_true)
-    y_pred = validate_array_like(y_pred)
+    """Validate metrics input"""
+    y_true = validate_array_like(y_true, name="targets")
+    y_pred = validate_array_like(y_pred, name="predictions")
+    y_true = validate_non_empty_array(y_true, name="targets")
+    y_pred = validate_non_empty_array(y_pred, name="predictions")
     
-    if not (y_true.size > 0 and y_true.size > 0):
-        raise ValueError(
-            f"Expect predictions and targets to be non-empty array"
-        )
-
     if not (y_true.shape == y_pred.shape):
         raise ValueError(
             f"Expect predictions and targets to have same shape, got {y_true.shape} and {y_pred.shape}"
@@ -98,7 +90,8 @@ def validate_metrics_array(y_true, y_pred):
     return y_true, y_pred
 
 def validate_options(x, options, x_name="input"):
+    """Validate if input in options"""
     if x not in options:
-        raise ValueError(f"{x_name} must be one of the following choices: {options}")
+        raise ValueError(f"{x_name} must be one of the following options: {options}")
     
     return x, options

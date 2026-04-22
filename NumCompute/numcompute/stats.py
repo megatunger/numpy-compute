@@ -6,21 +6,25 @@
 
 import numpy as np
 
-from numcompute.utils import validate_array_like, validate_options
+from numcompute.utils import validate_array_like, validate_options, validate_non_empty_array
 
 def handle_nan(arr, handling):
-    if handling == 'ignore':
-        # Ignore NaN values by indexing only not NaN values
-        arr = arr[~arr.isnan()]
+    if handling == 'raise':
+        if np.isnan(arr).any():
+            raise ValueError("There are NaN values in inputs")
+    elif handling =='return_nan':
+        return arr
     elif type(handling) in [int, float, bool, np.ndarray]:
         # Impute given data
-        arr[~arr.isnan()] = handling
+        arr[np.isnan(arr)] = handling
+        return arr
     else:
         # Raise error if encountered unexpected value
-        raise ValueError(f"Expect nan_handling to be 'ignore' for ignoring NaN values, or [int, float, bool, np.ndarray] for imputation. Got {type(handling)}")
-    return arr
+        raise ValueError(f"Expect nan_handling to be 'raise', or [int, float, bool, np.ndarray] for imputation. Got {type(handling)}")
 
-def mean(arr, nan_handling="ignore", *args, **kwargs) -> np.ndarray:
+    return arr
+    
+def mean(arr, nan_handling="raise", *args, **kwargs) -> np.ndarray:
     """Compute the arithmetic mean along the specified axis.
 
     Returns the average of the array elements.  The average is taken over
@@ -77,12 +81,14 @@ def mean(arr, nan_handling="ignore", *args, **kwargs) -> np.ndarray:
         If `out=None`, returns a new array containing the mean values,
         otherwise a reference to the output array is returned.
     """
-    arr = handle_nan(validate_array_like(arr), nan_handling)
+    arr = validate_array_like(arr)
+    arr = validate_non_empty_array(arr)
+    arr = handle_nan(arr, nan_handling)
 
     return np.mean(arr, *args, **kwargs)
 
 
-def median(arr, nan_handling="ignore", *args, **kwargs) -> np.ndarray:
+def median(arr, nan_handling="raise", *args, **kwargs) -> np.ndarray:
     """Compute the median along the specified axis.
 
     Returns the median of the array elements. 
@@ -129,12 +135,14 @@ def median(arr, nan_handling="ignore", *args, **kwargs) -> np.ndarray:
         same as that of the input. If `out` is specified, that array is
         returned instead.
     """
-    arr = handle_nan(validate_array_like(arr), nan_handling)
-
+    arr = validate_array_like(arr)
+    arr = validate_non_empty_array(arr)
+    arr = handle_nan(arr, nan_handling)
+    
     return np.median(arr, *args, **kwargs)
 
 
-def std(arr, nan_handling="ignore", *args, **kwargs) -> np.ndarray:
+def std(arr, nan_handling="raise", *args, **kwargs) -> np.ndarray:
     """Compute the standard deviation along the specified axis.
 
     Returns the standard deviation, a measure of the spread of a distribution,
@@ -206,12 +214,14 @@ def std(arr, nan_handling="ignore", *args, **kwargs) -> np.ndarray:
         If `out` is None, return a new array containing the standard deviation,
         otherwise return a reference to the output array.
     """
-    arr = handle_nan(validate_array_like(arr), nan_handling)
+    arr = validate_array_like(arr)
+    arr = validate_non_empty_array(arr)
+    arr = handle_nan(arr, nan_handling)
 
     return np.std(arr, *args, **kwargs)
 
 
-def min(arr, nan_handling="ignore", *args, **kwargs) -> np.ndarray:
+def min(arr, nan_handling="raise", *args, **kwargs) -> np.ndarray:
     """Return the minimum of an array or minimum along an axis.
 
     This function is equivalent to numpy.min with additional NaN handling
@@ -262,12 +272,14 @@ def min(arr, nan_handling="ignore", *args, **kwargs) -> np.ndarray:
         ``a.ndim - 1``.  If `axis` is a tuple, the result is an array of
         dimension ``a.ndim - len(axis)``.
     """
-    arr = handle_nan(validate_array_like(arr), nan_handling)
+    arr = validate_array_like(arr)
+    arr = validate_non_empty_array(arr)
+    arr = handle_nan(arr, nan_handling)
 
     return np.min(arr, *args, **kwargs)
 
 
-def max(arr, nan_handling="ignore", *args, **kwargs) -> np.ndarray:
+def max(arr, nan_handling="raise", *args, **kwargs) -> np.ndarray:
     """Return the maximum of an array or maximum along an axis.
 
     This function is equivalent to numpy.max with additional NaN handling
@@ -317,12 +329,14 @@ def max(arr, nan_handling="ignore", *args, **kwargs) -> np.ndarray:
         ``a.ndim - 1``. If `axis` is a tuple, the result is an array of
         dimension ``a.ndim - len(axis)``.
     """
-    arr = handle_nan(validate_array_like(arr), nan_handling)
+    arr = validate_array_like(arr)
+    arr = validate_non_empty_array(arr)
+    arr = handle_nan(arr, nan_handling)
 
     return np.max(arr, *args, **kwargs)
 
 
-def histogram(arr, nan_handling="ignore", *args, **kwargs) -> np.ndarray:
+def histogram(arr, nan_handling="raise", *args, **kwargs) -> np.ndarray:
     """Compute the histogram of a dataset.
 
     This function is equivalent to numpy.histogram with additional NaN handling
@@ -378,11 +392,13 @@ def histogram(arr, nan_handling="ignore", *args, **kwargs) -> np.ndarray:
     bin_edges : array of dtype float
         Return the bin edges ``(length(hist)+1)``.
     """
-    arr = handle_nan(validate_array_like(arr), nan_handling)
+    arr = validate_array_like(arr)
+    arr = validate_non_empty_array(arr)
+    arr = handle_nan(arr, nan_handling)
 
     return np.histogram(arr, *args, **kwargs)
 
-def quantile(arr, nan_handling="ignore", *args, **kwargs) -> np.ndarray:
+def quantile(arr, q, nan_handling="raise", *args, **kwargs) -> np.ndarray:
     """Compute the q-th quantile of the data along the specified axis.
     
     This function is equivalent to numpy.quantile with additional NaN handling
@@ -469,6 +485,7 @@ def quantile(arr, nan_handling="ignore", *args, **kwargs) -> np.ndarray:
         same as that of the input. If `out` is specified, that array is
         returned instead.
     """
-    arr = handle_nan(validate_array_like(arr), nan_handling)
-
-    return np.quantile(arr, *args, **kwargs)
+    arr = validate_array_like(arr)
+    arr = validate_non_empty_array(arr)
+    arr = handle_nan(arr, nan_handling)
+    return np.quantile(arr, q, *args, **kwargs)
