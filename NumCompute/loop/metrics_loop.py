@@ -56,7 +56,7 @@ def f1_score_loop(y_true, y_pred, pos_label=1) -> float:
     _f1_score = 2 * (_recall * _precision) / (_recall + _precision)
     return float(_f1_score)
 
-def confusion_matrix(y_true, y_pred, labels=None) -> np.ndarray:
+def confusion_matrix_loop(y_true, y_pred, labels=None) -> np.ndarray:
     
     if labels is None:
         labels = set(y_true).update(set(y_pred))
@@ -69,7 +69,7 @@ def confusion_matrix(y_true, y_pred, labels=None) -> np.ndarray:
 
     return cm
 
-def mean_squared_error(y_true, y_pred) -> float:
+def mean_squared_error_loop(y_true, y_pred) -> float:
     
     n, sum_squared_error = 0, 0
     
