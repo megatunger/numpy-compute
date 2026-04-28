@@ -1,5 +1,12 @@
 import numpy as np
 
+from numcompute.utils import (
+    validate_array_like,
+    validate_non_empty_array,
+    validate_options,
+)
+
+
 class StandardScaler:
     def __init__(self):
         """Create a scaler that standardizes each feature
@@ -17,7 +24,8 @@ class StandardScaler:
             X: 2D input data
             y: Not used, kept for API consistency
         """
-        X = np.asarray(X, dtype=float)
+        X = validate_array_like(X, name="X").astype(float)
+        X = validate_non_empty_array(X, name="X")
         if X.ndim != 2:
             raise ValueError("StandardScaler expects 2D input.")
         self.mean_ = np.mean(X, axis=0)
@@ -33,7 +41,7 @@ class StandardScaler:
         Parameters:
             X: 2D input data to scale
         """
-        X = np.asarray(X, dtype=float)
+        X = validate_array_like(X, name="X").astype(float)
         if self.mean_ is None or self.scale_ is None:
             raise ValueError("StandardScaler is not fitted. Call fit() first.")
         
@@ -73,7 +81,8 @@ class MinMaxScaler:
             X: 2D input data
             y: Not used, kept for API consistency
         """
-        X = np.asarray(X, dtype=float)
+        X = validate_array_like(X, name="X").astype(float)
+        X = validate_non_empty_array(X, name="X")
         if X.ndim != 2:
             raise ValueError("MinMaxScaler expects 2D input.")
         self.data_min_ = np.min(X, axis=0)
@@ -87,7 +96,7 @@ class MinMaxScaler:
         Parameters:
             X: 2D input data to rescale
         """
-        X = np.asarray(X, dtype=float)
+        X = validate_array_like(X, name="X").astype(float)
         if self.data_min_ is None or self.data_range_ is None:
             raise ValueError("MinMaxScaler is not fitted. Call fit() first.")
         X_scaled = (X - self.data_min_) / self.data_range_
@@ -110,8 +119,9 @@ class OneHotEncoder:
         Parameters:
             handle_unknown: What to do with unknown categories
         """
-        if handle_unknown not in ("error", "ignore"):
-            raise ValueError("handle_unknown must be 'error' or 'ignore'.")
+        validate_options(
+            handle_unknown, ("error", "ignore"), x_name="handle_unknown"
+        )
         self.handle_unknown = handle_unknown
         self.categories_ = None
         self.n_features_in_ = None
@@ -123,7 +133,8 @@ class OneHotEncoder:
             X: 2D categorical input data
             y: Not used, kept for API consistency
         """
-        X = np.asarray(X)
+        X = validate_array_like(X, name="X")
+        X = validate_non_empty_array(X, name="X")
         if X.ndim != 2:
             raise ValueError("OneHotEncoder expects 2D input.")
         n_cols = X.shape[1]
@@ -137,7 +148,7 @@ class OneHotEncoder:
         Parameters:
             X: 2D categorical input data to encode
         """
-        X = np.asarray(X)
+        X = validate_array_like(X, name="X")
         if X.ndim != 2:
             raise ValueError("OneHotEncoder expects 2D input.")
         if self.categories_ is None:
@@ -172,14 +183,14 @@ class OneHotEncoder:
 
 
 class SimpleImputer:
-    def __init__(self, strategy = 'mean'):
+    def __init__(self, strategy='mean'):
         """Create an imputer that fills missing values
 
         Parameters:
             strategy: Method used to fill missing values
         """
-        if strategy not in ('mean'):
-            raise NotImplementedError("This strategy has not been supported yet")
+        validate_options(strategy, ("mean",), x_name="strategy")
+        self.strategy = strategy
         self.statistics_ = None
 
     def fit(self, X, y=None):
@@ -189,7 +200,8 @@ class SimpleImputer:
             X: 2D input data, can contain NaN
             y: Not used, kept for API consistency
         """
-        X = np.asarray(X, dtype=float)
+        X = validate_array_like(X, name="X").astype(float)
+        X = validate_non_empty_array(X, name="X")
         if X.ndim != 2:
             raise ValueError("SimpleImputer expects 2D input.")
         self.statistics_ = np.nanmean(X, axis=0)
@@ -201,10 +213,11 @@ class SimpleImputer:
         Parameters:
             X: 2D input data with possible NaN values
         """
-        X = np.asarray(X, dtype=float)
+        X = validate_array_like(X, name="X").astype(float)
+        if self.statistics_ is None:
+            raise ValueError("SimpleImputer is not fitted. Call fit() first.")
         if X.ndim != 2:
             raise ValueError("SimpleImputer expects 2D input.")
-        X_filled = np.copy(X)
         X_filled = np.where(np.isnan(X), self.statistics_, X)
         return X_filled
 
