@@ -30,10 +30,10 @@ jobs:
         run: |
           coverage run --source=numcompute -m unittest discover -s tests -p "*_tests.py" -t . -v
           coverage report -m
-          coverage xml
+          coverage html
 
-      - name: Upload coverage report
+      - name: Upload HTML coverage report
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-report
-          path: NumCompute/coverage.xml
+          name: html-coverage-report
+          path: NumCompute/htmlcov
