@@ -31,15 +31,23 @@ class RankTests(unittest.TestCase):
         a = np.array([1.0, 1.0, 1.0])
         self.assertTrue(np.array_equal(rank(a), np.array([2.0, 2.0, 2.0])))
 
+    def test_shape(self):
+        a = np.array([3.0, 1.0, 2.0])
+        for method in ['ordinal', 'dense', 'average']:
+            self.assertEqual(rank(a, method=method).shape, a.shape)
+
+    # Errors
+
     def test_invalid_method(self):
         a = np.array([1.0, 2.0, 3.0])
         with self.assertRaises(ValueError):
             rank(a, method='definitely real method')
 
-    def test_shape(self):
-        a = np.array([3.0, 1.0, 2.0])
-        for method in ['ordinal', 'dense', 'average']:
-            self.assertEqual(rank(a, method=method).shape, a.shape)
+    def test_invalid_dim(self):
+        a = np.array([[1.0, 2.0, 3.0],
+                      [4.0, 5.0, 6.0]])
+        with self.assertRaises(ValueError):
+            rank(a)
 
 class PercentileTests(unittest.TestCase):
     def test_median(self):
@@ -75,10 +83,25 @@ class PercentileTests(unittest.TestCase):
         result = percentile(a, [0, 50, 100])
         np.testing.assert_array_almost_equal(result, np.array([1.0, 3.0, 5.0]))
 
+    # Errors
+
     def test_invalid_method(self):
         a = np.array([1.0, 2.0, 3.0])
         with self.assertRaises(ValueError):
             percentile(a, 50, interpolation='definitely real method')
+
+    def test_invalid_dim(self):
+        a = np.array([[1.0, 2.0, 3.0],
+                      [4.0, 5.0, 6.0]])
+        with self.assertRaises(ValueError):
+            percentile(a, 50)
+
+    def test_invalid_range(self):
+        a = np.array([1.0, 2.0, 3.0])
+        with self.assertRaises(ValueError):
+            percentile(a, [-10, 20, 30])
+        with self.assertRaises(ValueError):
+            percentile(a, [10, 120, 30])
 
 if __name__ == '__main__':
     unittest.main()
