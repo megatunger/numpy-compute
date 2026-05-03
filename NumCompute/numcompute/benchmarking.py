@@ -1,7 +1,23 @@
 import time
+import numpy as np
 
+from numcompute.loops.metrics_loop import (
+    accuracy_score_loop,
+    precision_score_loop,
+    recall_score_loop,
+    f1_score_loop,
+    confusion_matrix_loop,
+    mean_squared_error_loop
+)
+from numcompute.loops.stats_loop import (
+    mean_loop,
+    median_loop,
+    std_loop,
+    min_loop,
+    max_loop
+)
 from numcompute.loops.sort_search_loop import stable_sort_loop
-from numcompute import sort_search
+from numcompute import sort_search, metrics, stats
 
 
 def benchmark(functions, params, repeats=5):
@@ -45,7 +61,116 @@ BENCHMARKS = {
                 "vectorized": sort_search.stable_sort,
             },
             "params": {
-                "a": sort_search.np.random.rand(1000),
+                "a": np.random.rand(10000),
+            },
+        },
+    },
+    "metrics": {
+        "accuracy_score": {
+            "functions": {
+                "loop": accuracy_score_loop,
+                "vectorized": metrics.accuracy_score
+            },
+            "params": {
+                "y_true": np.random.randint(0,2,10000),
+                "y_pred": np.random.randint(0,2,10000),
+            },
+        },
+        "precision_score": {
+            "functions": {
+                "loop": precision_score_loop,
+                "vectorized": metrics.precision_score
+            },
+            "params": {
+                "y_true": np.random.randint(0,2,10000),
+                "y_pred": np.random.randint(0,2,10000),
+            },
+        },
+        "recall_score": {
+            "functions": {
+                "loop": recall_score_loop,
+                "vectorized": metrics.recall_score
+            },
+            "params": {
+                "y_true": np.random.randint(0,2,10000),
+                "y_pred": np.random.randint(0,2,10000),
+            },
+        },
+        "f1_score": {
+            "functions": {
+                "loop": f1_score_loop,
+                "vectorized": metrics.f1_score
+            },
+            "params": {
+                "y_true": np.random.randint(0,2,10000),
+                "y_pred": np.random.randint(0,2,10000),
+            },
+        },
+        "confusion_matrix": {
+            "functions": {
+                "loop": confusion_matrix_loop,
+                "vectorized": metrics.confusion_matrix
+            },
+            "params": {
+                "y_true": np.random.randint(0,2,10000),
+                "y_pred": np.random.randint(0,2,10000),
+            },
+        },
+        "mean_squared_error": {
+            "functions": {
+                "loop": mean_squared_error_loop,
+                "vectorized": metrics.mean_squared_error
+            },
+            "params": {
+                "y_true": np.random.rand(10000),
+                "y_pred": np.random.rand(10000),
+            },
+        }
+    },
+    "stats": {
+        "mean": {
+            "functions": {
+                "loop": mean_loop,
+                "vectorized": stats.mean
+            },
+            "params": {
+                "arr": np.random.rand(10000),
+            },
+        },
+        "median": {
+            "functions": {
+                "loop": median_loop,
+                "vectorized": stats.median
+            },
+            "params": {
+                "arr": np.random.rand(10000),
+            },
+        },
+        "std": {
+            "functions": {
+                "loop": std_loop,
+                "vectorized": stats.std
+            },
+            "params": {
+                "arr": np.random.rand(10000),
+            },
+        },
+        "min": {
+            "functions": {
+                "loop": min_loop,
+                "vectorized": stats.min
+            },
+            "params": {
+                "arr": np.random.rand(10000),
+            },
+        },
+        "max": {
+            "functions": {
+                "loop": max_loop,
+                "vectorized": stats.max
+            },
+            "params": {
+                "arr": np.random.rand(10000),
             },
         },
     },

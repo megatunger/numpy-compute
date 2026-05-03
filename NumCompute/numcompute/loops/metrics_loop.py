@@ -38,7 +38,7 @@ def recall_score_loop(y_true, y_pred, pos_label=1) -> float:
     TP, FP = 0, 0
     for a, b in zip(y_true, y_pred):
         TP += (a == pos_label and b == pos_label)
-        FN += (a != pos_label and b == pos_label)
+        FP += (a != pos_label and b == pos_label)
         
     if TP + FP == 0:
         return 0.0
@@ -59,7 +59,8 @@ def f1_score_loop(y_true, y_pred, pos_label=1) -> float:
 def confusion_matrix_loop(y_true, y_pred, labels=None) -> np.ndarray:
     
     if labels is None:
-        labels = set(y_true).update(set(y_pred))
+        labels = set(y_true)
+        labels.update(set(y_pred))
     
     labels = list(labels)
     cm = [[0] * len(labels)] * len(labels)
