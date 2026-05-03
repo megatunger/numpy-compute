@@ -1,11 +1,13 @@
 import numpy as np
 
+from numcompute.utils import validate_options
+
 
 def grad(f, x, h=1e-5, method="central"):
     """Estimate the gradient of a scalar function f at point x
 
-    Given f: R^n -> R, return an array g of the same shape as x where
-    g[i] approximates the partial derivative of f with respect to x[i].
+    Given f: R^n -> R, return a 1D array of the same shape as x whose entry i
+    approximates the partial derivative ∂f/∂x_i at x.
 
     Parameters:
         f: Callable taking a 1D array-like and returning a scalar
@@ -14,27 +16,24 @@ def grad(f, x, h=1e-5, method="central"):
         method: 'central' for (f(x+h) - f(x-h)) / (2h),
                 'forward' for (f(x+h) - f(x))   / h
     """
-    # Step 1: validate `method` is one of {'central', 'forward'}.
-    #         Raise ValueError otherwise (look at how preprocessing.py
-    #         validates `handle_unknown` for inspiration).
-
-    # Step 2: convert x to a 1D float ndarray with np.asarray(..., dtype=float).
-    #         Optionally check x.ndim == 1 and raise ValueError if not.
-
-    # Step 3: allocate an output array `g` with the same shape as x,
-    #         filled with zeros (np.zeros_like is handy here).
-
-    # Step 4: loop over each coordinate i in range(x.size):
-    #           - build x_plus  = a copy of x with x_plus[i]  += h
-    #           - build x_minus = a copy of x with x_minus[i] -= h   (only if central)
-    #           - compute the finite-difference quotient using f(...)
-    #           - store the result into g[i]
-    #
-    #         Hint: np.copy(x) gives you an independent copy you can mutate.
-    #         Hint: do NOT mutate x itself.
-
-    # Step 5: return g.
-    raise NotImplementedError("grad: implement me using finite differences")
+    validate_options(method, ("central", "forward"), x_name="method")
+    x = np.asarray(x, dtype=float)
+    if x.ndim != 1:
+        raise ValueError("grad expects a 1D array x.")
+    # Estimated ∂f/∂x_i for each coordinate i (finite differences along each axis).
+    gradient = np.zeros_like(x)
+    # Forward stencil uses one baseline value f(x); central compares ±h without needing it.
+    f_at_base = f(x) if method == "forward" else None
+    for coord_index in range(x.size):
+        x_plus_h = np.copy(x)
+        x_plus_h[coord_index] += h
+        if method == "central":
+            x_minus_h = np.copy(x)
+            x_minus_h[coord_index] -= h
+            gradient[coord_index] = (f(x_plus_h) - f(x_minus_h)) / (2 * h)
+        else:
+            gradient[coord_index] = (f(x_plus_h) - f_at_base) / h
+    return gradient
 
 
 def jacobian(F, x, h=1e-5, method="central"):
