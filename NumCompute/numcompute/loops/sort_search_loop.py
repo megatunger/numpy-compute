@@ -1,5 +1,4 @@
 import numpy as np
-from typing import Union
 
 ### SORTING
 
@@ -42,7 +41,7 @@ def multi_key_sort_loop(a: np.ndarray, columns: list[int]) -> np.ndarray:
 
     return np.array(result)
 
-def topk_loop(a: np.ndarray, k: int, largest: bool = True, return_indices: bool = True) -> Union[tuple[np.ndarray, np.ndarray], np.ndarray]:
+def topk_loop(a: np.ndarray, k: int, largest: bool = True, return_indices: bool = True) -> tuple[np.ndarray, np.ndarray] | np.ndarray:
 
     topk_pairs = list(enumerate(a.tolist()))
 
@@ -54,7 +53,7 @@ def topk_loop(a: np.ndarray, k: int, largest: bool = True, return_indices: bool 
 
     indices = np.array([p[0] for p in topk_pairs[:k]])
     return values, indices
-def binary_search_loop(a: np.ndarray, x: Union[int, float]) -> tuple[int, bool]:
+def binary_search_loop(a: np.ndarray, x: int | float) -> tuple[int, bool]:
     result = a.tolist()
     left = 0
     right = len(result)
@@ -69,7 +68,7 @@ def binary_search_loop(a: np.ndarray, x: Union[int, float]) -> tuple[int, bool]:
     found = left < len(result) and result[left] == x
     return left, found
 
-def select(a: list, left: int, right: int, k: int) -> Union[int, float]:
+def select(a: list, left: int, right: int, k: int) -> int | float:
     if left == right:
         return a[left]
 
@@ -92,7 +91,7 @@ def select(a: list, left: int, right: int, k: int) -> Union[int, float]:
     else:
         return select(a, mid, right, k)
 
-def quickselect_loop(a: np.ndarray, k: int) -> Union[int, float]:
+def quickselect_loop(a: np.ndarray, k: int) -> int | float:
     if k < 0 or k > a.size - 1:
         raise ValueError(f"k value must be in [0, {a.size - 1}], got: {k}")
 
