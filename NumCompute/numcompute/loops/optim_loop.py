@@ -1,6 +1,6 @@
 import numpy as np
 
-from numcompute.utils import _validate_vector, validate_array_like, validate_options
+from numcompute.utils import validate_vector, validate_array_like, validate_options
 
 
 def grad_loop(f, x, h=1e-5, method="central"):
@@ -11,7 +11,7 @@ def grad_loop(f, x, h=1e-5, method="central"):
     """
     validate_options(method, ("central", "forward"), x_name="method")
     x = validate_array_like(x, name="input").astype(float)
-    _validate_vector(x)
+    validate_vector(x)
 
     gradient = np.zeros_like(x)
     f_at_base = None
@@ -44,7 +44,7 @@ def jacobian_loop(F, x, h=1e-5, method="central"):
     """Estimate a Jacobian by reusing grad_loop for each output component."""
     validate_options(method, ("central", "forward"), x_name="method")
     x = validate_array_like(x, name="input").astype(float)
-    _validate_vector(x)
+    validate_vector(x)
 
     f_at_x = np.asarray(F(x[np.newaxis, :]), dtype=float)
     if f_at_x.ndim != 2 or f_at_x.shape[0] != 1:

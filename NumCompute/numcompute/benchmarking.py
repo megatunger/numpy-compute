@@ -1,6 +1,17 @@
 import time
 
+import numpy as np
+
+from numcompute import optim
+from numcompute import preprocessing
+from numcompute.loops.optim_loop import grad_loop, jacobian_loop
 from numcompute.loops.sort_search_loop import stable_sort_loop
+from numcompute.loops.preprocessing_loop import (
+    MinMaxScalerLoop,
+    OneHotEncoderLoop,
+    SimpleImputerLoop,
+    StandardScalerLoop,
+)
 from numcompute import sort_search
 
 
@@ -38,6 +49,70 @@ def benchmark(functions, params, repeats=5):
 
 
 BENCHMARKS = {
+    "optim": {
+        "grad": {
+            "functions": {
+                "loop": grad_loop,
+                "vectorized": optim.grad,
+            },
+            "params": {
+                "f": lambda X: np.sum(X ** 2, axis=1),
+                "x": np.array([1.0, 2.0, 3.0, 4.0]),
+            },
+        },
+        "jacobian": {
+            "functions": {
+                "loop": jacobian_loop,
+                "vectorized": optim.jacobian,
+            },
+            "params": {
+                "F": lambda X: X ** 2,
+                "x": np.array([1.0, 2.0, 3.0, 4.0]),
+            },
+        },
+    },
+    "preprocessing": {
+        "standard_scaler": {
+            "functions": {
+                "loop": StandardScalerLoop().fit_transform,
+                "vectorized": preprocessing.StandardScaler().fit_transform,
+            },
+            "params": {
+                "X": np.random.rand(1000, 10),
+            },
+        },
+        "minmax_scaler": {
+            "functions": {
+                "loop": MinMaxScalerLoop().fit_transform,
+                "vectorized": preprocessing.MinMaxScaler().fit_transform,
+            },
+            "params": {
+                "X": np.random.rand(1000, 10),
+            },
+        },
+        "one_hot_encoder": {
+            "functions": {
+                "loop": OneHotEncoderLoop().fit_transform,
+                "vectorized": preprocessing.OneHotEncoder().fit_transform,
+            },
+            "params": {
+                "X": np.random.choice(["red", "blue", "green"], size=(1000, 3)),
+            },
+        },
+        "simple_imputer": {
+            "functions": {
+                "loop": SimpleImputerLoop().fit_transform,
+                "vectorized": preprocessing.SimpleImputer().fit_transform,
+            },
+            "params": {
+                "X": np.where(
+                    np.random.rand(1000, 10) < 0.1,
+                    np.nan,
+                    np.random.rand(1000, 10),
+                ),
+            },
+        },
+    },
     "sort_search": {
         "stable_sort": {
             "functions": {
