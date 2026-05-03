@@ -32,6 +32,10 @@ jobs:
           coverage report -m
           coverage html
 
+      - name: Run benchmarks
+        run: |
+          python -m numcompute.benchmarking
+
       - name: Upload HTML coverage report
         uses: actions/upload-artifact@v4
         with:
