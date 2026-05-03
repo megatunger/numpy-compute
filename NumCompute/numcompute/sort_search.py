@@ -1,6 +1,6 @@
 import numpy as np
 from typing import Union
-from numcompute.utils import _validate_vector
+from numcompute.utils import validate_vector
 
 ### SORTING
 
@@ -29,7 +29,7 @@ def stable_sort(a: np.ndarray) -> np.ndarray:
     Time  : O(nlogn) because numpy's np.sort uses merge sort.
     Space : O(n) because mergesort requires auxiliary memory proportional to input size.
     """
-    _validate_vector(a)
+    validate_vector(a)
     return np.sort(a, kind='stable')
 
 def multi_key_sort(a: np.ndarray, columns: list[int]) -> np.ndarray:
@@ -111,7 +111,7 @@ def topk(a: np.ndarray, k: int, largest: bool = True, return_indices: bool = Tru
     Time  : O(n + klogk) because O(n) partition + O(klogk) sort of k elements.
     Space : O(k) for values and indices.
     """
-    _validate_vector(a)
+    validate_vector(a)
     if k < 1 or k > a.size:
         raise ValueError(f"k value must be in [1, {a.size}], got: {k}")
 
@@ -172,7 +172,7 @@ def binary_search(a: np.ndarray, x: Union[int, float]) -> tuple[int, bool]:
     Time  : O(logn) because binary search
     Space : O(1) because only index is used as an auxilliary value
     """
-    _validate_vector(a)
+    validate_vector(a)
     # searchsorted uses binary search
     index = np.searchsorted(a, x)
     return (int(index), index >= 0 and index < len(a) and a[index] == x)
@@ -206,7 +206,7 @@ def quickselect(a: np.ndarray, k: int) -> Union[int, float]:
     Time  : O(n) average because numpy's argpartition.
     Space : O(n) because the copy of a (worst case of quick select is also only O(n)).
     """
-    _validate_vector(a)
+    validate_vector(a)
     if k < 0 or k > a.size - 1:
         raise ValueError(f"k value must be in [0, {a.size - 1}], got: {k}")
 

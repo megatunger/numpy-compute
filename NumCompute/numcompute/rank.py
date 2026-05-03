@@ -1,6 +1,6 @@
 import numpy as np
 from typing import Union
-from numcompute.utils import _validate_vector
+from numcompute.utils import validate_vector
 
 def rank(a: np.ndarray, method: str='average') -> np.ndarray:
     """
@@ -38,7 +38,7 @@ def rank(a: np.ndarray, method: str='average') -> np.ndarray:
     Time  : O(nlogn) because of the sort call (which uses mergesort).
     Space : O(n) for the intermediate arrays.
     """
-    _validate_vector(a)
+    validate_vector(a)
 
     # ranks ties based on order of appearance
     if method == 'ordinal':
@@ -102,7 +102,7 @@ def percentile(a: np.ndarray, q: Union[float, list[float]], interpolation: str='
     Time  : O(nlogn) because numpy's np.percentile sorts the array internally.
     Space : O(n) for the sorted copy.
     """
-    _validate_vector(a)
+    validate_vector(a)
     
     methods = ['linear', 'lower', 'higher', 'midpoint']
     if interpolation not in methods:
