@@ -152,7 +152,7 @@ BENCHMARKS = {
                 "vectorized": stable_sort,
             },
             "params": {
-                "a": np.random.rand(10000),
+                "a": np.random.rand(1000),
             },
         },
         "multi_key_sort": {
