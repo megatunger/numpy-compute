@@ -12,7 +12,22 @@ from numcompute.loops.preprocessing_loop import (
     SimpleImputerLoop,
     StandardScalerLoop,
 )
-from numcompute import sort_search
+from numcompute.loops.sort_search_loop import (
+    stable_sort_loop, 
+    multi_key_sort_loop, 
+    topk_loop, 
+    binary_search_loop, 
+    quickselect_loop,
+)
+from numcompute.sort_search import (
+    stable_sort, 
+    multi_key_sort, 
+    topk, 
+    binary_search, 
+    quickselect
+)
+from numcompute.loops.rank_loop import rank_loop, percentile_loop
+from numcompute.rank import rank, percentile
 
 
 def benchmark(functions, params, repeats=5):
@@ -117,10 +132,82 @@ BENCHMARKS = {
         "stable_sort": {
             "functions": {
                 "loop": stable_sort_loop,
-                "vectorized": sort_search.stable_sort,
+                "vectorized": stable_sort,
             },
             "params": {
-                "a": sort_search.np.random.rand(1000),
+                "a": np.random.rand(1000),
+            },
+        },
+        "multi_key_sort": {
+            "functions": {
+                "loop": multi_key_sort_loop,
+                "vectorized": multi_key_sort,
+            },
+            "params": {
+                "a": np.random.rand(1000),
+                "columns": np.random.randint(0, 1000, size=np.random.randint(1, 1001))
+            },
+        },
+        "topk": {
+            "functions": {
+                "loop": topk_loop,
+                "vectorized": topk,
+            },
+            "params": {
+                "a": np.random.rand(1000),
+                "k": np.random.randint(1, 1001)
+            },
+        },
+        "binary_search": {
+            "functions": {
+                "loop": binary_search_loop,
+                "vectorized": binary_search,
+            },
+            "params": {
+                "a": np.random.rand(1000),
+                "x": np.random.randint(10000)
+            },
+        },
+        "stable_sort": {
+            "functions": {
+                "loop": stable_sort_loop,
+                "vectorized": stable_sort,
+            },
+            "params": {
+                "a": np.random.rand(1000),
+            },
+        },
+        "quickselect": {
+            "functions": {
+                "loop": quickselect_loop,
+                "vectorized": quickselect,
+            },
+            "params": {
+                "a": np.random.rand(1000),
+                "k": np.random.randint(0, 1000)
+            },
+        },
+    },
+    "rank": {
+        "rank": {
+            "functions": {
+                "loop": rank_loop,
+                "vectorized": rank,
+            },
+            "params": {
+                "a": np.random.rand(1000),
+                "method": np.random.choice(['average', 'ordinal', 'dense'])
+            },
+        },
+        "percentile": {
+            "functions": {
+                "loop": percentile_loop,
+                "vectorized": percentile,
+            },
+            "params": {
+                "a": np.random.rand(1000),
+                "q": np.random.randint(1, 100),
+                "interpolation": np.random.choice(['linear', 'lower', 'higher', 'midpoint'])
             },
         },
     },
