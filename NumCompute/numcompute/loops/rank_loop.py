@@ -1,5 +1,4 @@
 import numpy as np
-from typing import Union
 
 def rank_loop(a: np.ndarray, method: str='average') -> np.ndarray:
     result = a.tolist()
@@ -42,7 +41,7 @@ def rank_loop(a: np.ndarray, method: str='average') -> np.ndarray:
 
     return np.array(ranks)
 
-def percentile_loop(a: np.ndarray, q: Union[float, list[float]], interpolation: str='linear') -> Union[np.ndarray, np.floating]:
+def percentile_loop(a: np.ndarray, q: float | list[float], interpolation: str='linear') -> np.ndarray | np.floating:
     sorted_a = a.tolist()
     sorted_a.sort()
     n = len(sorted_a)

@@ -1,5 +1,4 @@
 import numpy as np
-from typing import Union
 from numcompute.utils import validate_vector
 
 def rank(a: np.ndarray, method: str='average') -> np.ndarray:
@@ -62,7 +61,7 @@ def rank(a: np.ndarray, method: str='average') -> np.ndarray:
 
     raise ValueError("Unknown ranking method received! Valid methods are 'average', 'dense', or 'ordinal'.")
 
-def percentile(a: np.ndarray, q: Union[float, list[float]], interpolation: str='linear') -> Union[np.ndarray, np.floating]:
+def percentile(a: np.ndarray, q: float | list[float], interpolation: str='linear') -> np.ndarray | np.floating:
     """
     Compute the q-th percentile(s) of a vector (through numpy's np.percentile), with 
     four supported interpolation strategies:

@@ -1,5 +1,4 @@
 import numpy as np
-from typing import Union
 from numcompute.utils import validate_vector
 
 ### SORTING
@@ -71,7 +70,7 @@ def multi_key_sort(a: np.ndarray, columns: list[int]) -> np.ndarray:
 
 ### TOP K
 
-def topk(a: np.ndarray, k: int, largest: bool = True, return_indices: bool = True) -> Union[tuple[np.ndarray, np.ndarray], np.ndarray]:
+def topk(a: np.ndarray, k: int, largest: bool = True, return_indices: bool = True) -> tuple[np.ndarray, np.ndarray] | np.ndarray:
     """
     Retrieve the top-k elements (and potentially indices) of a 1-D array, sorted 
     in descending order or ascending order.
@@ -137,7 +136,7 @@ def topk(a: np.ndarray, k: int, largest: bool = True, return_indices: bool = Tru
 
 ### SEARCH
 
-def binary_search(a: np.ndarray, x: Union[int, float]) -> tuple[int, bool]:
+def binary_search(a: np.ndarray, x: int | float) -> tuple[int, bool]:
     """
     Search for a value x in a sorted vector using binary search (through numpy's
     np.searchsorted, which implements binary search internally).
@@ -179,7 +178,7 @@ def binary_search(a: np.ndarray, x: Union[int, float]) -> tuple[int, bool]:
 
 ### QUICKSELECT
 
-def quickselect(a: np.ndarray, k: int) -> Union[int, float]:
+def quickselect(a: np.ndarray, k: int) -> int | float:
     """
     Finds the element that would appear at index k in the
     sorted version of a.
