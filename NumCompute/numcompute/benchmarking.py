@@ -155,6 +155,46 @@ BENCHMARKS = {
                 "a": np.random.rand(10000),
             },
         },
+        "multi_key_sort": {
+            "functions": {
+                "loop": multi_key_sort_loop,
+                "vectorized": multi_key_sort,
+            },
+            "params": {
+                "a": np.random.rand(1000, 3),
+                "columns": [0, 1, 2],
+            },
+        },
+        "topk": {
+            "functions": {
+                "loop": topk_loop,
+                "vectorized": topk,
+            },
+            "params": {
+                "a": np.random.rand(1000),
+                "k": 10,
+            },
+        },
+        "binary_search": {
+            "functions": {
+                "loop": binary_search_loop,
+                "vectorized": binary_search,
+            },
+            "params": {
+                "a": np.sort(np.random.rand(1000)),
+                "x": 0.5,
+            },
+        },
+        "quickselect": {
+            "functions": {
+                "loop": quickselect_loop,
+                "vectorized": quickselect,
+            },
+            "params": {
+                "a": np.random.rand(1000),
+                "k": 100,
+            },
+        },
     },
     "metrics": {
         "accuracy_score": {
@@ -262,56 +302,6 @@ BENCHMARKS = {
             },
             "params": {
                 "arr": np.random.rand(10000),
-                "a": np.random.rand(1000),
-            },
-        },
-        "multi_key_sort": {
-            "functions": {
-                "loop": multi_key_sort_loop,
-                "vectorized": multi_key_sort,
-            },
-            "params": {
-                "a": np.random.rand(1000),
-                "columns": np.random.randint(0, 1000, size=np.random.randint(1, 1001))
-            },
-        },
-        "topk": {
-            "functions": {
-                "loop": topk_loop,
-                "vectorized": topk,
-            },
-            "params": {
-                "a": np.random.rand(1000),
-                "k": np.random.randint(1, 1001)
-            },
-        },
-        "binary_search": {
-            "functions": {
-                "loop": binary_search_loop,
-                "vectorized": binary_search,
-            },
-            "params": {
-                "a": np.random.rand(1000),
-                "x": np.random.randint(10000)
-            },
-        },
-        "stable_sort": {
-            "functions": {
-                "loop": stable_sort_loop,
-                "vectorized": stable_sort,
-            },
-            "params": {
-                "a": np.random.rand(1000),
-            },
-        },
-        "quickselect": {
-            "functions": {
-                "loop": quickselect_loop,
-                "vectorized": quickselect,
-            },
-            "params": {
-                "a": np.random.rand(1000),
-                "k": np.random.randint(0, 1000)
             },
         },
     },

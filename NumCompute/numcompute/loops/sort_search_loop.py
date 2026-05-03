@@ -35,7 +35,7 @@ def multi_key_sort_loop(a: np.ndarray, columns: list[int]) -> np.ndarray:
     for i in range(1, n):
         key = result[i]
         j = i - 1
-        while j >= 0 and _compare_multi_key(result[j], key, columns) > 0:
+        while j >= 0 and _compare_multi_key(result[j], key, columns):
             result[j + 1] = result[j]
             j -= 1
         result[j + 1] = key
