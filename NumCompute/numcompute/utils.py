@@ -52,6 +52,7 @@ def validate_options(x, options, x_name="input"):
 def _validate_vector(a: np.ndarray) -> None:
     """
     Validates that input a is a vector, and doesn't contain any NaN values.
+    Used in other files.
  
     Parameters
     ----------
@@ -86,14 +87,12 @@ def _validate_vectors(a: np.ndarray, b: np.ndarray) -> None:
     Raises
     ------
     ValueError
-        If either inputs have a dimension not equal to 1, or if both inputs don't share the same shape.
+        If both inputs don't share the same shape.
         If either inputs contain a NaN value.
     """
-    if a.ndim != 1 or b.ndim != 1:
-        raise ValueError(f"At least one of the input vectors is not 1 dimension! Inputs had {a.ndim} and {b.ndim} dimensions.")
     if a.shape != b.shape:
         raise ValueError(f"The inputs must have matching shapes! Inputs were shapes {a.shape} and {b.shape}.")
-    # only floating point arrays can contain Nan
+    # only floating point arrays can contain NaN
     if np.issubdtype(a.dtype, np.floating):
         if np.isnan(a).any() or np.isnan(b).any():
             raise ValueError(f"The inputs contain NaN values!")
@@ -119,15 +118,16 @@ def euclidean_distance(a: np.ndarray, b: np.ndarray) -> float:
     Raises
     ------
     ValueError
-        If either inputs have a dimension not equal to 1, or if both inputs don't share the same shape.
+        If both inputs don't share the same shape.
+        If either inputs contain a NaN value.
  
     Complexity
     ----------
-    Time  : O(n) because numpy's np.linalg.norm
+    Time  : O(n) because numpy's np.sum
     Space : O(n) for the intermediate a - b.
     """    
     _validate_vectors(a, b)
-    return np.linalg.norm(a - b)
+    return np.sqrt(np.sum((a - b) ** 2))
 
 def manhattan_distance(a: np.ndarray, b: np.ndarray) -> float:
     """
@@ -148,7 +148,8 @@ def manhattan_distance(a: np.ndarray, b: np.ndarray) -> float:
     Raises
     ------
     ValueError
-        If either inputs have a dimension not equal to 1, or if both inputs don't share the same shape.
+        If both inputs don't share the same shape.
+        If either inputs contain a NaN value.
  
     Complexity
     ----------
@@ -177,7 +178,8 @@ def chebyshev_distance(a: np.ndarray, b: np.ndarray) -> float:
     Raises
     ------
     ValueError
-        If either inputs have a dimension not equal to 1, or if both inputs don't share the same shape.
+        If both inputs don't share the same shape.
+        If either inputs contain a NaN value.
  
     Complexity
     ----------
@@ -206,8 +208,9 @@ def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
     Raises
     ------
     ValueError
-        If either inputs have a dimension not equal to 1, if both inputs don't share the same shape,
-        or if either inputs is a zero vector.
+        If both inputs don't share the same shape.
+        If either inputs contain a NaN value.
+        If either inputs is a zero vector.
  
     Complexity
     ----------
@@ -215,10 +218,11 @@ def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
     Space : O(n) for the intermediate normalised arrays norm_a, norm_b.
     """    
     _validate_vectors(a, b)
-    norm_a, norm_b = np.linalg.norm(a), np.linalg.norm(b)
+    a_flat, b_flat = a.flatten(), b.flatten()
+    norm_a, norm_b = np.linalg.norm(a_flat), np.linalg.norm(b_flat)
     if norm_a == 0 or norm_b == 0:
         raise ValueError("At least one of the input vectors is a zero vector! Cosine similarity is undefined for the zero vector.")
-    return np.dot(a, b) / (norm_a * norm_b)
+    return np.dot(a_flat, b_flat) / (norm_a * norm_b)
 
 # TODO: distance calculation for matrices as well?
 

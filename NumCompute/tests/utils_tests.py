@@ -19,7 +19,6 @@ class EuclideanDistanceTests(unittest.TestCase):
         a = np.array([1, 2, 3])
         b = np.array([4, 5, 6])
         self.assertEqual(round(euclidean_distance(a, b), 3), 5.196)
-        # self.assertAlmostEqual(euclidean_distance(a, b), 5.19615)
 
     def test_negative(self):
         a = np.array([1, 2, 3])
@@ -40,6 +39,39 @@ class EuclideanDistanceTests(unittest.TestCase):
         a = np.zeros(100)
         b = np.ones(100)
         self.assertEqual(round(euclidean_distance(a, b), 3), 10.0)
+
+    def test_2d(self):
+        a = np.array([[1, 2], 
+                      [3, 4]])
+        b = np.array([[5, 6], 
+                      [7, 8]])
+        self.assertEqual(round(euclidean_distance(a, b), 3), 8.0)
+
+    def test_3d(self):
+        a = np.array([[1, 2], 
+                      [3, 4],
+                      [5, 6]])
+        b = np.array([[5, 6], 
+                      [7, 8],
+                      [9, 10]])
+        self.assertEqual(round(euclidean_distance(a, b), 3), 9.798)
+
+    # Errors
+    def test_diff_shape(self):
+        a = np.array([[1, 2], 
+                      [3, 4]])
+        b = np.array([5, 6, 7])
+        with self.assertRaises(ValueError):
+            euclidean_distance(a, b)
+
+    def test_nan(self):
+        a = np.array([1.0, 2.0, 3.0])
+        b = np.array([4.0, np.nan, 6.0])
+        c = np.array([np.nan, 8.0, 9.0])
+        with self.assertRaises(ValueError):
+            euclidean_distance(a, b)
+        with self.assertRaises(ValueError):
+            euclidean_distance(c, a)
 
 class ManhattanDistanceTests(unittest.TestCase):
 
@@ -68,6 +100,39 @@ class ManhattanDistanceTests(unittest.TestCase):
         b = np.ones(100)
         self.assertEqual(round(manhattan_distance(a, b), 3), 100.0)
 
+    def test_2d(self):
+        a = np.array([[1, 2], 
+                      [3, 4]])
+        b = np.array([[5, 6], 
+                      [7, 8]])
+        self.assertEqual(round(manhattan_distance(a, b), 3), 16.0)
+
+    def test_3d(self):
+        a = np.array([[1, 2], 
+                      [3, 4],
+                      [5, 6]])
+        b = np.array([[5, 6], 
+                      [7, 8],
+                      [9, 10]])
+        self.assertEqual(round(manhattan_distance(a, b), 3), 24.0)
+
+    # Errors
+    def test_diff_shape(self):
+        a = np.array([[1, 2], 
+                      [3, 4]])
+        b = np.array([5, 6, 7])
+        with self.assertRaises(ValueError):
+            euclidean_distance(a, b)
+
+    def test_nan(self):
+        a = np.array([1.0, 2.0, 3.0])
+        b = np.array([4.0, np.nan, 6.0])
+        c = np.array([np.nan, 8.0, 9.0])
+        with self.assertRaises(ValueError):
+            euclidean_distance(a, b)
+        with self.assertRaises(ValueError):
+            euclidean_distance(c, a)
+
 class ChebyshevDistanceTests(unittest.TestCase):
 
     def test_basic(self):
@@ -95,6 +160,39 @@ class ChebyshevDistanceTests(unittest.TestCase):
         b = np.ones(100)
         self.assertEqual(round(chebyshev_distance(a, b), 3), 1.0)
 
+    def test_2d(self):
+        a = np.array([[1, 2], 
+                      [3, 4]])
+        b = np.array([[5, 6], 
+                      [7, 8]])
+        self.assertEqual(round(chebyshev_distance(a, b), 3), 4.0)
+
+    def test_3d(self):
+        a = np.array([[1, 2], 
+                      [3, 4],
+                      [5, 6]])
+        b = np.array([[5, 6], 
+                      [7, 8],
+                      [9, 10]])
+        self.assertEqual(round(chebyshev_distance(a, b), 3), 4.0)
+
+    # Errors
+    def test_diff_shape(self):
+        a = np.array([[1, 2], 
+                      [3, 4]])
+        b = np.array([5, 6, 7])
+        with self.assertRaises(ValueError):
+            euclidean_distance(a, b)
+
+    def test_nan(self):
+        a = np.array([1.0, 2.0, 3.0])
+        b = np.array([4.0, np.nan, 6.0])
+        c = np.array([np.nan, 8.0, 9.0])
+        with self.assertRaises(ValueError):
+            euclidean_distance(a, b)
+        with self.assertRaises(ValueError):
+            euclidean_distance(c, a)
+
 class CosineSimilarityTests(unittest.TestCase):
 
     def test_basic(self):
@@ -120,7 +218,40 @@ class CosineSimilarityTests(unittest.TestCase):
     def test_dims(self):
         a = np.full(100, 2)
         b = np.ones(100)
-        self.assertEqual(round(chebyshev_distance(a, b), 3), 1.0)
+        self.assertEqual(round(cosine_similarity(a, b), 3), 1.0)
+
+    def test_2d(self):
+        a = np.array([[1, 2], 
+                      [3, 4]])
+        b = np.array([[5, 6], 
+                      [7, 8]])
+        self.assertEqual(round(cosine_similarity(a, b), 3), 0.969)
+
+    def test_3d(self):
+        a = np.array([[1, 2], 
+                      [3, 4],
+                      [5, 6]])
+        b = np.array([[5, 6], 
+                      [7, 8],
+                      [9, 10]])
+        self.assertEqual(round(cosine_similarity(a, b), 3), 0.974)
+
+    # Errors
+    def test_diff_shape(self):
+        a = np.array([[1, 2], 
+                      [3, 4]])
+        b = np.array([5, 6, 7])
+        with self.assertRaises(ValueError):
+            euclidean_distance(a, b)
+
+    def test_nan(self):
+        a = np.array([1.0, 2.0, 3.0])
+        b = np.array([4.0, np.nan, 6.0])
+        c = np.array([np.nan, 8.0, 9.0])
+        with self.assertRaises(ValueError):
+            euclidean_distance(a, b)
+        with self.assertRaises(ValueError):
+            euclidean_distance(c, a)
 
     def test_zeros(self):
         a = np.zeros(3)

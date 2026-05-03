@@ -1,79 +1,78 @@
 import numpy as np
 
+from numcompute.utils import _validate_vector, validate_array_like, validate_options
+
 
 def grad(f, x, h=1e-5, method="central"):
     """Estimate the gradient of a scalar function f at point x
 
-    Given f: R^n -> R, return an array g of the same shape as x where
-    g[i] approximates the partial derivative of f with respect to x[i].
+    Given batched f: R^(batch_size x n) -> R^(batch_size), return a 1D
+    array whose entry i approximates the partial derivative ∂f/∂x_i at x.
 
     Parameters:
-        f: Callable taking a 1D array-like and returning a scalar
+        f: Callable taking a 2D array-like of shape (batch_size, n) and
+           returning one scalar per input row
         x: 1D array-like, point at which to estimate the gradient
         h: Small step size used for finite differences
         method: 'central' for (f(x+h) - f(x-h)) / (2h),
                 'forward' for (f(x+h) - f(x))   / h
     """
-    # Step 1: validate `method` is one of {'central', 'forward'}.
-    #         Raise ValueError otherwise (look at how preprocessing.py
-    #         validates `handle_unknown` for inspiration).
+    validate_options(method, ("central", "forward"), x_name="method")
+    x = validate_array_like(x, name="input").astype(float)
+    _validate_vector(x)
+    n = x.size
 
-    # Step 2: convert x to a 1D float ndarray with np.asarray(..., dtype=float).
-    #         Optionally check x.ndim == 1 and raise ValueError if not.
+    # Each row changes exactly one coordinate, so f evaluates all axes at once.
+    perturbations = h * np.eye(n)
+    f_plus = np.asarray(f(x + perturbations), dtype=float).ravel()
+    if f_plus.size != n:
+        raise ValueError("f must return one scalar value per input row.")
 
-    # Step 3: allocate an output array `g` with the same shape as x,
-    #         filled with zeros (np.zeros_like is handy here).
+    if method == "central":
+        f_minus = np.asarray(f(x - perturbations), dtype=float).ravel()
+        if f_minus.size != n:
+            raise ValueError("f must return one scalar value per input row.")
+        return (f_plus - f_minus) / (2 * h)
 
-    # Step 4: loop over each coordinate i in range(x.size):
-    #           - build x_plus  = a copy of x with x_plus[i]  += h
-    #           - build x_minus = a copy of x with x_minus[i] -= h   (only if central)
-    #           - compute the finite-difference quotient using f(...)
-    #           - store the result into g[i]
-    #
-    #         Hint: np.copy(x) gives you an independent copy you can mutate.
-    #         Hint: do NOT mutate x itself.
-
-    # Step 5: return g.
-    raise NotImplementedError("grad: implement me using finite differences")
+    # Forward differences reuse the single value at the unperturbed point.
+    f_at_base = np.asarray(f(x[np.newaxis, :]), dtype=float).ravel()
+    if f_at_base.size != 1:
+        raise ValueError("f must return one scalar value per input row.")
+    return (f_plus - f_at_base[0]) / h
 
 
 def jacobian(F, x, h=1e-5, method="central"):
     """Estimate the Jacobian matrix of a vector-valued function F at point x
 
-    Given F: R^n -> R^m, return a 2D array J of shape (m, n) where
-    J[i, j] approximates the partial derivative of F_i with respect to x_j.
+    Given batched F: R^(batch_size x n) -> R^(batch_size x m), return a
+    2D array J of shape (m, n) where J[i, j] approximates the partial
+    derivative of F_i with respect to x_j.
 
     Parameters:
-        F: Callable taking a 1D array-like of length n and returning
-           a 1D array-like of length m
+        F: Callable taking a 2D array-like of shape (batch_size, n) and
+           returning a 2D array-like of shape (batch_size, m)
         x: 1D array-like of length n, point at which to estimate the Jacobian
         h: Small step size used for finite differences
         method: 'central' or 'forward' (same meaning as in `grad`)
     """
-    # Step 1: validate `method` (same rule as in grad).
+    validate_options(method, ("central", "forward"), x_name="method")
+    x = validate_array_like(x, name="input").astype(float)
+    _validate_vector(x)
+    f_at_x = np.asarray(F(x[np.newaxis, :]), dtype=float)
+    if f_at_x.ndim != 2 or f_at_x.shape[0] != 1:
+        raise ValueError("F must return a 2D array with one row per input point.")
+    m = f_at_x.shape[1]
 
-    # Step 2: convert x to a 1D float ndarray.
+    J = np.zeros((m, x.size))
 
-    # Step 3: probe the output dimension `m`:
-    #         call F once at x (or at a copy of x) and look at the
-    #         length of the returned array. This tells you how many
-    #         rows the Jacobian will have.
-    #
-    #         Hint: np.asarray(F(x), dtype=float).ravel() gives a clean 1D vector.
+    # A Jacobian row is the gradient of one output component of F.
+    for output_index in range(m):
+        def component_function(points, output_index=output_index):
+            values = np.asarray(F(points), dtype=float)
+            if values.ndim != 2 or values.shape[0] != points.shape[0]:
+                raise ValueError("F must return shape (batch_size, m).")
+            return values[:, output_index]
 
-    # Step 4: allocate J as a zero matrix of shape (m, n).
+        J[output_index, :] = grad(component_function, x, h=h, method=method)
 
-    # Step 5: loop over each input coordinate j in range(n):
-    #           - perturb only x[j] by +h (and -h for central) on a COPY of x
-    #           - evaluate F at the perturbed point(s)
-    #           - compute the finite-difference column vector:
-    #               * forward: (F(x + h e_j) - F(x))         / h
-    #               * central: (F(x + h e_j) - F(x - h e_j)) / (2h)
-    #           - store this vector into the j-th COLUMN of J,  i.e. J[:, j].
-
-    # Step 6: return J.
-    #
-    # Bonus thinking question (not required to code):
-    #   How could you re-use `grad` to build `jacobian`? What would
-    #   you call `grad` on, and what is the trade-off vs. the loop above?
-    raise NotImplementedError("jacobian: implement me using finite differences")
+    return J

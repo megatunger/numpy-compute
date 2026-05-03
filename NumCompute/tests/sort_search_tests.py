@@ -53,6 +53,14 @@ class StableSortTests(unittest.TestCase):
         self.assertEqual(result[2]['order'], 1)
         self.assertEqual(result[3]['order'], 3)
 
+    # Errors 
+
+    def test_invalid_dim(self):
+        a = np.array([[1.0, 2.0, 3.0],
+                      [4.0, 5.0, 6.0]])
+        with self.assertRaises(ValueError):
+            stable_sort(a)
+
 class MultiKeySortTests(unittest.TestCase):
     def test_single_column(self):
         a = np.array([[3, 1],
@@ -112,6 +120,16 @@ class MultiKeySortTests(unittest.TestCase):
         a = np.random.rand(3, 2)
         self.assertEqual(multi_key_sort(a, [0, 1]).shape, a.shape)
 
+    # Errors
+
+    def test_out_of_bounds(self):
+        a = np.array([[1, 3],
+                      [2, 1],
+                      [1, 1],
+                      [2, 2]])
+        with self.assertRaises(ValueError):
+            multi_key_sort(a, [0, 4])
+
 class TopKTests(unittest.TestCase):
     def test_largest_true(self):
         a = np.array([3, 1, 4, 1, 5, 9, 2, 6])
@@ -147,6 +165,21 @@ class TopKTests(unittest.TestCase):
         values, indices = topk(a, 3, largest=True)
         self.assertTrue(np.array_equal(values, np.array([-1, -1, -3])))
         self.assertTrue(np.array_equal(values, a[indices]))
+
+    # Errors
+
+    def test_invalid_dim(self):
+        a = np.array([[1, 2, 3],
+                      [4, 5, 6]])
+        with self.assertRaises(ValueError):
+            topk(a, 2)
+
+    def test_out_of_bounds(self):
+        a = np.array([3, 1, 4, 1, 5])
+        with self.assertRaises(ValueError):
+            topk(a, -5)
+        with self.assertRaises(ValueError):
+            topk(a, 9)
 
 class BinarySearchTests(unittest.TestCase):
     def test_exist(self):
@@ -191,6 +224,14 @@ class BinarySearchTests(unittest.TestCase):
         self.assertEqual(index, 3)  
         self.assertTrue(exist)
 
+    # Errors
+
+    def test_invalid_dim(self):
+        a = np.array([[1, 2, 3],
+                      [4, 5, 6]])
+        with self.assertRaises(ValueError):
+            binary_search(a, 2)
+
 class QuickSelectTests(unittest.TestCase):
 
     def test_basic(self):
@@ -220,6 +261,21 @@ class QuickSelectTests(unittest.TestCase):
     def test_negative(self):
         a = np.array([-3, -1, -4, -1, -5])
         self.assertEqual(quickselect(a, 4), -1)
+
+    # Errors
+
+    def test_invalid_dim(self):
+        a = np.array([[1, 2, 3],
+                      [4, 5, 6]])
+        with self.assertRaises(ValueError):
+            quickselect(a, 2)
+
+    def test_out_of_bounds(self):
+        a = np.array([3, 1, 4, 1, 5])
+        with self.assertRaises(ValueError):
+            quickselect(a, -5)
+        with self.assertRaises(ValueError):
+            quickselect(a, 9)
 
 if __name__ == '__main__':
     unittest.main()
