@@ -1,6 +1,6 @@
 import numpy as np
 
-from numcompute.utils import validate_options
+from numcompute.utils import _validate_vector, validate_array_like, validate_options
 
 
 def grad(f, x, h=1e-5, method="central"):
@@ -17,9 +17,8 @@ def grad(f, x, h=1e-5, method="central"):
                 'forward' for (f(x+h) - f(x))   / h
     """
     validate_options(method, ("central", "forward"), x_name="method")
-    x = np.asarray(x, dtype=float)
-    if x.ndim != 1:
-        raise ValueError("grad expects a 1D array x.")
+    x = validate_array_like(x, name="input").astype(float)
+    _validate_vector(x)
     # Estimated ∂f/∂x_i for each coordinate i (finite differences along each axis).
     gradient = np.zeros_like(x)
     # Forward stencil uses one baseline value f(x); central compares ±h without needing it.
