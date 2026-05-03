@@ -281,8 +281,9 @@ BENCHMARKS = {
                 "vectorized": topk,
             },
             "params": {
-                "a": np.random.rand(1000),
-                "k": np.random.randint(1, 1001)
+                # forcing a specific column number
+                "a": np.random.rand(np.random.randint(2, 100), 50),
+                "k": np.random.randint(1, 51)
             },
         },
         "binary_search": {
