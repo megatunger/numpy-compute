@@ -1,6 +1,6 @@
 import numpy as np
 
-from numcompute.utils import _validate_vector, validate_array_like, validate_options
+from numcompute.utils import validate_vector, validate_array_like, validate_options
 
 
 def grad(f, x, h=1e-5, method="central"):
@@ -19,7 +19,7 @@ def grad(f, x, h=1e-5, method="central"):
     """
     validate_options(method, ("central", "forward"), x_name="method")
     x = validate_array_like(x, name="input").astype(float)
-    _validate_vector(x)
+    validate_vector(x)
     n = x.size
 
     # Each row changes exactly one coordinate, so f evaluates all axes at once.
@@ -57,7 +57,7 @@ def jacobian(F, x, h=1e-5, method="central"):
     """
     validate_options(method, ("central", "forward"), x_name="method")
     x = validate_array_like(x, name="input").astype(float)
-    _validate_vector(x)
+    validate_vector(x)
     f_at_x = np.asarray(F(x[np.newaxis, :]), dtype=float)
     if f_at_x.ndim != 2 or f_at_x.shape[0] != 1:
         raise ValueError("F must return a 2D array with one row per input point.")
