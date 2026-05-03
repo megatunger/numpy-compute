@@ -133,6 +133,7 @@ def run_benchmark_group(group_name, repeats=5):
     print(f"Start benchmark {group_name}.py")
 
     for test_name, test in group.items():
+        print("-" * 50)
         print(f"\nBenchmark: {test_name}")
         benchmark(test["functions"], test["params"], repeats=repeats)
 
