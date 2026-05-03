@@ -11,13 +11,13 @@ class TestLoadCsv(unittest.TestCase):
     def test_load_csv_skips_header_and_reads_numbers(self):
         with TemporaryDirectory() as temp_dir:
             file_path = Path(temp_dir) / "data.csv"
-            csv_text = "x,y,z\n1,2,3\n4,5,6\n"
+            csv_text = "x,y,z\n1,2,nan\n4,5,6\n"
             file_path.write_text(csv_text, encoding="utf-8")
 
             loaded = load_csv(file_path)
 
         expected = np.array([
-            [1.0, 2.0, 3.0],
+            [1.0, 2.0, np.nan],
             [4.0, 5.0, 6.0],
         ])
         np.testing.assert_array_equal(loaded, expected)

@@ -39,6 +39,11 @@ class TestMean(unittest.TestCase):
         x = np.array([1e10, 1e10])
         self.assertEqual(mean(x), 1e10)
 
+    def test_non_contiguous_stride(self):
+        x = np.array([1, 99, 3, 88, 5])[::2]
+        self.assertFalse(x.flags.c_contiguous)
+        self.assertEqual(mean(x), 3.0)
+
 
 class TestMedian(unittest.TestCase):
 
@@ -65,11 +70,16 @@ class TestMedian(unittest.TestCase):
     def test_empty(self):
         x = np.array([])
         with self.assertRaises(ValueError):
-            mean(x)
+            median(x)
 
     def test_with_nan(self):
         x = np.array([1, np.nan])
         self.assertAlmostEqual(median(x, nan_handling=0), 0.5)
+
+    def test_non_contiguous_stride(self):
+        x = np.array([1, 99, 3, 88, 5])[::2]
+        self.assertFalse(x.flags.c_contiguous)
+        self.assertEqual(median(x), 3)
 
 
 class TestStd(unittest.TestCase):
@@ -97,11 +107,16 @@ class TestStd(unittest.TestCase):
     def test_empty(self):
         x = np.array([])
         with self.assertRaises(ValueError):
-            mean(x)
+            std(x)
 
     def test_with_nan(self):
         x = np.array([1.0, np.nan])
         self.assertAlmostEqual(std(x, nan_handling=0.0), 0.5)
+
+    def test_non_contiguous_stride(self):
+        x = np.array([1, 99, 3, 88, 5])[::2]
+        self.assertFalse(x.flags.c_contiguous)
+        self.assertAlmostEqual(std(x), np.sqrt(8 / 3))
 
 class TestMinMax(unittest.TestCase):
 
@@ -137,6 +152,12 @@ class TestMinMax(unittest.TestCase):
         with self.assertRaises(ValueError):
             max(x)
 
+    def test_non_contiguous_stride(self):
+        x = np.array([1, 99, 3, 88, 5])[::2]
+        self.assertFalse(x.flags.c_contiguous)
+        self.assertEqual(min(x), 1)
+        self.assertEqual(max(x), 5)
+
 
 class TestHistogram(unittest.TestCase):
 
@@ -166,6 +187,12 @@ class TestHistogram(unittest.TestCase):
         hist, bins = histogram(x, bins=2, density=True)
         # integral approx = 1
         self.assertAlmostEqual(np.sum(hist * np.diff(bins)), 1.0, places=5)
+
+    def test_non_contiguous_stride(self):
+        x = np.array([1, 99, 2, 88, 3])[::2]
+        hist, _ = histogram(x, bins=3)
+        self.assertFalse(x.flags.c_contiguous)
+        np.testing.assert_array_equal(hist, [1, 1, 1])
 
 class TestQuantile(unittest.TestCase):
 
@@ -208,6 +235,11 @@ class TestQuantile(unittest.TestCase):
     def test_with_nan(self):
         x = np.array([1.0, np.nan])
         self.assertEqual(quantile(x, 0.5, nan_handling=0), 0.5)
+
+    def test_non_contiguous_stride(self):
+        x = np.array([1, 99, 3, 88, 5])[::2]
+        self.assertFalse(x.flags.c_contiguous)
+        self.assertEqual(quantile(x, 0.5), 3.0)
 
 
 if __name__ == "__main__":

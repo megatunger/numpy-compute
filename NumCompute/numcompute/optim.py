@@ -4,18 +4,31 @@ from numcompute.utils import validate_vector, validate_array_like, validate_opti
 
 
 def grad(f, x, h=1e-5, method="central"):
-    """Estimate the gradient of a scalar function f at point x
+    """Estimate the gradient of a scalar function f at point x.
 
-    Given batched f: R^(batch_size x n) -> R^(batch_size), return a 1D
-    array whose entry i approximates the partial derivative ∂f/∂x_i at x.
+    f must accept a batch with shape (batch_size, n_features) and return one
+    scalar per row.
 
     Parameters:
-        f: Callable taking a 2D array-like of shape (batch_size, n) and
-           returning one scalar per input row
-        x: 1D array-like, point at which to estimate the gradient
-        h: Small step size used for finite differences
-        method: 'central' for (f(x+h) - f(x-h)) / (2h),
-                'forward' for (f(x+h) - f(x))   / h
+        f: Function to differentiate.
+        x: Point where the gradient is estimated, shape (n_features,).
+        h: Step size for finite differences.
+        method: "central" or "forward".
+
+    Returns:
+        Gradient array with shape (n_features,).
+
+    Shapes:
+        f is called with shape (n_features, n_features) for perturbed points.
+        For forward differences, f is also called with shape (1, n_features).
+
+    Raises:
+        ValueError: If method is invalid, x is not a vector, or f does not return
+            one scalar per input row.
+
+    Complexity:
+        Time O(cost(f)) for the batched finite-difference call. Space
+        O(n_features^2) for the perturbation matrix.
     """
     validate_options(method, ("central", "forward"), x_name="method")
     x = validate_array_like(x, name="input").astype(float)
@@ -42,18 +55,31 @@ def grad(f, x, h=1e-5, method="central"):
 
 
 def jacobian(F, x, h=1e-5, method="central"):
-    """Estimate the Jacobian matrix of a vector-valued function F at point x
+    """Estimate the Jacobian matrix of a vector-valued function F at point x.
 
-    Given batched F: R^(batch_size x n) -> R^(batch_size x m), return a
-    2D array J of shape (m, n) where J[i, j] approximates the partial
-    derivative of F_i with respect to x_j.
+    F must accept a batch with shape (batch_size, n_features) and return shape
+    (batch_size, n_outputs).
 
     Parameters:
-        F: Callable taking a 2D array-like of shape (batch_size, n) and
-           returning a 2D array-like of shape (batch_size, m)
-        x: 1D array-like of length n, point at which to estimate the Jacobian
-        h: Small step size used for finite differences
-        method: 'central' or 'forward' (same meaning as in `grad`)
+        F: Function to differentiate.
+        x: Point where the Jacobian is estimated, shape (n_features,).
+        h: Step size for finite differences.
+        method: "central" or "forward".
+
+    Returns:
+        Jacobian array with shape (n_outputs, n_features).
+
+    Shapes:
+        F is first called with shape (1, n_features). Each output component is
+        then passed through grad.
+
+    Raises:
+        ValueError: If method is invalid, x is not a vector, or F returns an
+            array with the wrong shape.
+
+    Complexity:
+        Time O(n_outputs * cost(F)) through grad. Space
+        O(n_outputs * n_features + n_features^2).
     """
     validate_options(method, ("central", "forward"), x_name="method")
     x = validate_array_like(x, name="input").astype(float)

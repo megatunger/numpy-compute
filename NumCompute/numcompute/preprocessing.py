@@ -9,20 +9,25 @@ from numcompute.utils import (
 
 class StandardScaler:
     def __init__(self):
-        """Create a scaler that standardizes each feature
-
-        Parameters:
-            None
-        """
+        """Create a scaler that standardizes each feature."""
         self.mean_ = None
         self.scale_ = None
 
     def fit(self, X, y=None):
-        """Compute mean and standard deviation from input data
+        """Compute mean and standard deviation from input data.
 
         Parameters:
-            X: 2D input data
-            y: Not used, kept for API consistency
+            X: 2D input data with shape (n_samples, n_features).
+            y: Not used, kept for API consistency.
+
+        Returns:
+            self.
+
+        Raises:
+            ValueError: If X is empty or not 2D.
+
+        Complexity:
+            Time O(n_samples * n_features), space O(n_features).
         """
         X = validate_array_like(X, name="X").astype(float)
         X = validate_non_empty_array(X, name="X")
@@ -36,10 +41,19 @@ class StandardScaler:
         return self
 
     def transform(self, X):
-        """Scale input data using stats learned in fit
+        """Scale input data using stats learned in fit.
 
         Parameters:
-            X: 2D input data to scale
+            X: 2D input data with shape (n_samples, n_features).
+
+        Returns:
+            Scaled array with shape (n_samples, n_features).
+
+        Raises:
+            ValueError: If the scaler is not fitted.
+
+        Complexity:
+            Time O(n_samples * n_features), space O(n_samples * n_features).
         """
         X = validate_array_like(X, name="X").astype(float)
         if self.mean_ is None or self.scale_ is None:
@@ -50,21 +64,33 @@ class StandardScaler:
         return X_scaled
 
     def fit_transform(self, X, y=None):
-        """Fit the scaler and return scaled data
+        """Fit the scaler and return scaled data.
 
         Parameters:
-            X: 2D input data
-            y: Not used, kept for API consistency
+            X: 2D input data with shape (n_samples, n_features).
+            y: Not used, kept for API consistency.
+
+        Returns:
+            Scaled array with shape (n_samples, n_features).
+
+        Raises:
+            ValueError: If X is empty or not 2D.
+
+        Complexity:
+            Time O(n_samples * n_features), space O(n_samples * n_features).
         """
         return self.fit(X, y).transform(X)
 
 
 class MinMaxScaler:
     def __init__(self, feature_range=(0.0, 1.0)):
-        """Create a scaler that rescales features to a range
+        """Create a scaler that rescales features to a range.
 
         Parameters:
-            feature_range: Tuple like (min, max) for output scale
+            feature_range: Tuple like (min, max) for output scale.
+
+        Raises:
+            ValueError: If feature_range min is greater than or equal to max.
         """
         lo, hi = feature_range
         if lo >= hi:
@@ -75,11 +101,20 @@ class MinMaxScaler:
         self.data_max_ = None
 
     def fit(self, X, y=None):
-        """Compute per-feature min and max from input data
+        """Compute per-feature min and max from input data.
 
         Parameters:
-            X: 2D input data
-            y: Not used, kept for API consistency
+            X: 2D input data with shape (n_samples, n_features).
+            y: Not used, kept for API consistency.
+
+        Returns:
+            self.
+
+        Raises:
+            ValueError: If X is empty or not 2D.
+
+        Complexity:
+            Time O(n_samples * n_features), space O(n_features).
         """
         X = validate_array_like(X, name="X").astype(float)
         X = validate_non_empty_array(X, name="X")
@@ -91,10 +126,19 @@ class MinMaxScaler:
         return self
 
     def transform(self, X):
-        """Rescale input data using min and range from fit
+        """Rescale input data using min and range from fit.
 
         Parameters:
-            X: 2D input data to rescale
+            X: 2D input data with shape (n_samples, n_features).
+
+        Returns:
+            Rescaled array with shape (n_samples, n_features).
+
+        Raises:
+            ValueError: If the scaler is not fitted.
+
+        Complexity:
+            Time O(n_samples * n_features), space O(n_samples * n_features).
         """
         X = validate_array_like(X, name="X").astype(float)
         if self.data_min_ is None or self.data_range_ is None:
@@ -103,21 +147,34 @@ class MinMaxScaler:
         return X_scaled
 
     def fit_transform(self, X, y=None):
-        """Fit the scaler and return scaled data
+        """Fit the scaler and return scaled data.
 
         Parameters:
-            X: 2D input data
-            y: Not used, kept for API consistency
+            X: 2D input data with shape (n_samples, n_features).
+            y: Not used, kept for API consistency.
+
+        Returns:
+            Rescaled array with shape (n_samples, n_features).
+
+        Raises:
+            ValueError: If X is empty or not 2D, or if the scaler is not fitted.
+
+        Complexity:
+            Time O(n_samples * n_features), space O(n_samples * n_features).
         """
         return self.fit(X, y).transform(X)
 
 
 class OneHotEncoder:
     def __init__(self, handle_unknown="error"):
-        """Create an encoder for categorical columns
+        """Create an encoder for categorical columns.
 
         Parameters:
-            handle_unknown: What to do with unknown categories
+            handle_unknown: "error" raises on unknown categories. "ignore"
+                encodes unknown categories as all zeros.
+
+        Raises:
+            ValueError: If handle_unknown is not "error" or "ignore".
         """
         validate_options(
             handle_unknown, ("error", "ignore"), x_name="handle_unknown"
@@ -127,11 +184,21 @@ class OneHotEncoder:
         self.n_features_in_ = None
 
     def fit(self, X, y=None):
-        """Store unique categories for each input column
+        """Store unique categories for each input column.
 
         Parameters:
-            X: 2D categorical input data
-            y: Not used, kept for API consistency
+            X: 2D categorical input data with shape (n_samples, n_features).
+            y: Not used, kept for API consistency.
+
+        Returns:
+            self.
+
+        Raises:
+            ValueError: If X is empty or not 2D.
+
+        Complexity:
+            Time O(n_samples * n_features log n_samples), space O(k), where k
+            is the total number of stored categories.
         """
         X = validate_array_like(X, name="X")
         X = validate_non_empty_array(X, name="X")
@@ -143,10 +210,25 @@ class OneHotEncoder:
         return self
 
     def transform(self, X):
-        """Convert categorical columns to one-hot encoded columns
+        """Convert categorical columns to one-hot encoded columns.
 
         Parameters:
-            X: 2D categorical input data to encode
+            X: 2D categorical input data with shape (n_samples, n_features).
+
+        Returns:
+            Encoded array with shape (n_samples, n_encoded_features).
+
+        Shapes:
+            n_encoded_features is the total number of fitted categories.
+
+        Raises:
+            ValueError: If X is not 2D, the encoder is not fitted, the feature
+                count differs from fit, or unknown categories are found when
+                handle_unknown is "error".
+
+        Complexity:
+            Time O(n_samples * n_encoded_features), space
+            O(n_samples * n_encoded_features).
         """
         X = validate_array_like(X, name="X")
         if X.ndim != 2:
@@ -173,32 +255,60 @@ class OneHotEncoder:
         return np.hstack(encoded_columns)
 
     def fit_transform(self, X, y=None):
-        """Fit the encoder and return one-hot encoded data
+        """Fit the encoder and return one-hot encoded data.
 
         Parameters:
-            X: 2D categorical input data
-            y: Not used, kept for API consistency
+            X: 2D categorical input data with shape (n_samples, n_features).
+            y: Not used, kept for API consistency.
+
+        Returns:
+            Encoded array with shape (n_samples, n_encoded_features).
+
+        Shapes:
+            n_encoded_features is the total number of fitted categories.
+
+        Raises:
+            ValueError: If X is empty or not 2D.
+
+        Complexity:
+            Time O(n_samples * n_features log n_samples +
+            n_samples * n_encoded_features), space
+            O(n_samples * n_encoded_features).
         """
         return self.fit(X, y).transform(X)
 
 
 class SimpleImputer:
     def __init__(self, strategy='mean'):
-        """Create an imputer that fills missing values
+        """Create an imputer that fills missing values.
 
         Parameters:
-            strategy: Method used to fill missing values
+            strategy: Method used to fill missing values. Only "mean" is
+                supported.
+
+        Raises:
+            ValueError: If strategy is not "mean".
         """
         validate_options(strategy, ("mean",), x_name="strategy")
         self.strategy = strategy
         self.statistics_ = None
 
     def fit(self, X, y=None):
-        """Compute fill values for each feature
+        """Compute fill values for each feature.
 
         Parameters:
-            X: 2D input data, can contain NaN
-            y: Not used, kept for API consistency
+            X: 2D input data with shape (n_samples, n_features). May contain
+                NaN.
+            y: Not used, kept for API consistency.
+
+        Returns:
+            self.
+
+        Raises:
+            ValueError: If X is empty or not 2D.
+
+        Complexity:
+            Time O(n_samples * n_features), space O(n_features).
         """
         X = validate_array_like(X, name="X").astype(float)
         X = validate_non_empty_array(X, name="X")
@@ -208,10 +318,20 @@ class SimpleImputer:
         return self
 
     def transform(self, X):
-        """Replace NaN values using statistics from fit
+        """Replace NaN values using statistics from fit.
 
         Parameters:
-            X: 2D input data with possible NaN values
+            X: 2D input data with shape (n_samples, n_features). May contain
+                NaN.
+
+        Returns:
+            Filled array with shape (n_samples, n_features).
+
+        Raises:
+            ValueError: If the imputer is not fitted or X is not 2D.
+
+        Complexity:
+            Time O(n_samples * n_features), space O(n_samples * n_features).
         """
         X = validate_array_like(X, name="X").astype(float)
         if self.statistics_ is None:
@@ -222,10 +342,20 @@ class SimpleImputer:
         return X_filled
 
     def fit_transform(self, X, y=None):
-        """Fit the imputer and return filled data
+        """Fit the imputer and return filled data.
 
         Parameters:
-            X: 2D input data, can contain NaN
-            y: Not used, kept for API consistency
+            X: 2D input data with shape (n_samples, n_features). May contain
+                NaN.
+            y: Not used, kept for API consistency.
+
+        Returns:
+            Filled array with shape (n_samples, n_features).
+
+        Raises:
+            ValueError: If X is empty or not 2D.
+
+        Complexity:
+            Time O(n_samples * n_features), space O(n_samples * n_features).
         """
         return self.fit(X, y).transform(X)

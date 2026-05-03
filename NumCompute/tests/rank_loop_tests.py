@@ -31,6 +31,11 @@ class RankTests(unittest.TestCase):
         a = np.array([1.0, 1.0, 1.0])
         self.assertTrue(np.array_equal(rank_loop(a), np.array([2.0, 2.0, 2.0])))
 
+    def test_non_contiguous_stride(self):
+        a = np.array([3.0, 99.0, 1.0, 88.0, 2.0])[::2]
+        self.assertFalse(a.flags.c_contiguous)
+        self.assertTrue(np.array_equal(rank_loop(a), np.array([3.0, 1.0, 2.0])))
+
     def test_invalid_method(self):
         a = np.array([1.0, 2.0, 3.0])
         with self.assertRaises(ValueError):
@@ -74,6 +79,11 @@ class PercentileTests(unittest.TestCase):
         a = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
         result = percentile_loop(a, [0, 50, 100])
         np.testing.assert_array_almost_equal(result, np.array([1.0, 3.0, 5.0]))
+
+    def test_non_contiguous_stride(self):
+        a = np.array([1.0, 99.0, 3.0, 88.0, 5.0])[::2]
+        self.assertFalse(a.flags.c_contiguous)
+        self.assertEqual(percentile_loop(a, 50), 3.0)
 
     def test_invalid_method(self):
         a = np.array([1.0, 2.0, 3.0])

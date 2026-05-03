@@ -27,8 +27,27 @@ def load_csv(
     missing_values: _MissingValues = "",
     filling_values: _FillingValues = np.nan,
 ) -> np.ndarray:
-    # Load a homogeneous CSV file into a NumPy array.
-    # Assumes the first row is a header, so it gets skipped.
+    """Load a homogeneous CSV file into a NumPy array.
+
+    Parameters:
+        filepath: Path to the CSV file. The first row is treated as a header and
+            skipped.
+        delimiter: Field delimiter.
+        dtype: NumPy dtype for parsed values.
+        missing_values: Values treated as missing.
+        filling_values: Values used to fill missing entries.
+
+    Returns:
+        Parsed array.
+
+    Shapes:
+        Returns shape (n_rows, n_columns), after skipping the header. Returns
+        shape (0, 0) if no data rows are parsed.
+
+    Raises:
+        OSError: If the file cannot be opened.
+        ValueError: If NumPy cannot parse values using dtype.
+    """
     chunks: list[np.ndarray] = []
 
     for chunk in _iter_csv_chunks(
@@ -53,7 +72,26 @@ def _iter_csv_chunks(
     missing_values: _MissingValues,
     filling_values: _FillingValues,
 ) -> Iterator[np.ndarray]:
-    # Yield parsed CSV chunks after skipping the header row.
+    """Yield parsed CSV chunks after skipping the header row.
+
+    Parameters:
+        filepath: Path to the CSV file.
+        delimiter: Field delimiter.
+        dtype: NumPy dtype for parsed values.
+        missing_values: Values treated as missing.
+        filling_values: Values used to fill missing entries.
+
+    Returns:
+        Iterator of parsed chunks.
+
+    Shapes:
+        Each yielded chunk has shape (chunk_rows, n_columns). chunk_rows is at
+        most _DEFAULT_CHUNK_SIZE except the last chunk.
+
+    Raises:
+        OSError: If the file cannot be opened.
+        ValueError: If NumPy cannot parse values using dtype.
+    """
     lines: list[str] = []
 
     with Path(filepath).open("r", encoding="utf-8", newline="") as file:
@@ -96,7 +134,25 @@ def _parse_chunk(
     missing_values: _MissingValues,
     filling_values: _FillingValues,
 ) -> np.ndarray | None:
-    # Parse raw CSV lines into a 2D NumPy array.
+    """Parse raw CSV lines into a 2D NumPy array.
+
+    Parameters:
+        lines: Raw CSV data lines. Header should already be removed.
+        delimiter: Field delimiter.
+        dtype: NumPy dtype for parsed values.
+        missing_values: Values treated as missing.
+        filling_values: Values used to fill missing entries.
+
+    Returns:
+        Parsed chunk, or None when lines is empty or parses to no data.
+
+    Shapes:
+        Returned array has shape (n_rows, n_columns). Scalar and 1D NumPy
+        outputs are reshaped to 2D.
+
+    Raises:
+        ValueError: If NumPy cannot parse values using dtype.
+    """
     if not lines:
         return None
 

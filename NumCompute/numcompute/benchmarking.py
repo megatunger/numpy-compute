@@ -333,18 +333,30 @@ BENCHMARKS = {
 
 def run_benchmark_group(group_name, repeats=5):
     group = BENCHMARKS[group_name]
+    group_results = {}
 
     print(f"Start benchmark {group_name}.py")
 
     for test_name, test in group.items():
         print("-" * 50)
         print(f"\nBenchmark: {test_name}")
-        benchmark(test["functions"], test["params"], repeats=repeats)
+        result = benchmark(test["functions"], test["params"], repeats=repeats)
+
+        if "loop" in result and "vectorized" in result:
+            result["speedup"] = result["loop"] / result["vectorized"]
+
+        group_results[test_name] = result
+
+    return group_results
 
 
 def main():
+    all_results = {}
+
     for group_name in BENCHMARKS:
-        run_benchmark_group(group_name, repeats=5)
+        all_results[group_name] = run_benchmark_group(group_name, repeats=100)
+
+    return all_results
 
 
 if __name__ == "__main__":

@@ -6,8 +6,27 @@ from numcompute.utils import validate_vector, validate_array_like, validate_opti
 def grad_loop(f, x, h=1e-5, method="central"):
     """Estimate a gradient using loop-based finite differences.
 
-    f must accept a 2D batch of shape (batch_size, n) and return one scalar
-    per input row.
+    Parameters:
+        f: Function that accepts shape (batch_size, n_features) and returns one
+            scalar per row.
+        x: Point where the gradient is estimated, shape (n_features,).
+        h: Step size for finite differences.
+        method: "central" or "forward".
+
+    Returns:
+        Gradient array with shape (n_features,).
+
+    Shapes:
+        f input has shape (1, n_features) in each call. f output must have one
+        scalar value.
+
+    Raises:
+        ValueError: If method is invalid, x is not a vector, or f does not return
+            one scalar per input row.
+
+    Complexity:
+        Time O(n_features * cost(f)) for forward and O(2 * n_features *
+        cost(f)) for central. Space O(n_features).
     """
     validate_options(method, ("central", "forward"), x_name="method")
     x = validate_array_like(x, name="input").astype(float)
@@ -41,7 +60,31 @@ def grad_loop(f, x, h=1e-5, method="central"):
 
 
 def jacobian_loop(F, x, h=1e-5, method="central"):
-    """Estimate a Jacobian by reusing grad_loop for each output component."""
+    """Estimate a Jacobian by reusing grad_loop for each output component.
+
+    Parameters:
+        F: Function that accepts shape (batch_size, n_features) and returns
+            shape (batch_size, n_outputs).
+        x: Point where the Jacobian is estimated, shape (n_features,).
+        h: Step size for finite differences.
+        method: "central" or "forward".
+
+    Returns:
+        Jacobian array with shape (n_outputs, n_features).
+
+    Shapes:
+        F input has shape (1, n_features) for the first call. F output must have
+        shape (batch_size, n_outputs).
+
+    Raises:
+        ValueError: If method is invalid, x is not a vector, or F returns an
+            array with the wrong shape.
+
+    Complexity:
+        Time O(n_outputs * n_features * cost(F)) for forward and
+        O(2 * n_outputs * n_features * cost(F)) for central. Space
+        O(n_outputs * n_features).
+    """
     validate_options(method, ("central", "forward"), x_name="method")
     x = validate_array_like(x, name="input").astype(float)
     validate_vector(x)
