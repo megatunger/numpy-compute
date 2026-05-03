@@ -34,6 +34,11 @@ class StableSortTests(unittest.TestCase):
         a = np.array([1, 1, 1])
         self.assertTrue(np.array_equal(stable_sort_loop(a), a))
 
+    def test_non_contiguous_stride(self):
+        a = np.array([6, 99, 2, 88, 4, 77])[::2]
+        self.assertFalse(a.flags.c_contiguous)
+        self.assertTrue(np.array_equal(stable_sort_loop(a), np.array([2, 4, 6])))
+
     def test_negative(self):
         a = np.array([-3, -1, -2])
         self.assertTrue(np.array_equal(stable_sort_loop(a), np.array([-3, -2, -1])))
@@ -108,6 +113,20 @@ class MultiKeySortTests(unittest.TestCase):
                       [2, 2]])
         self.assertTrue(np.array_equal(multi_key_sort_loop(a, [0, 1]), a))
 
+    def test_non_contiguous_rows(self):
+        base = np.array([[3, 2],
+                         [99, 99],
+                         [1, 5],
+                         [88, 88],
+                         [2, 1],
+                         [77, 77]])
+        a = base[::2]
+        expected = np.array([[1, 5],
+                             [2, 1],
+                             [3, 2]])
+        self.assertFalse(a.flags.c_contiguous)
+        np.testing.assert_array_equal(multi_key_sort_loop(a, [0]), expected)
+
     def test_shape(self):
         a = np.random.rand(3, 2)
         self.assertEqual(multi_key_sort_loop(a, [0, 1]).shape, a.shape)
@@ -146,6 +165,13 @@ class TopKTests(unittest.TestCase):
         a = np.array([-3, -1, -4, -1, -5])
         values, indices = topk_loop(a, 3, largest=True)
         self.assertTrue(np.array_equal(values, np.array([-1, -1, -3])))
+        self.assertTrue(np.array_equal(values, a[indices]))
+
+    def test_non_contiguous_stride(self):
+        a = np.array([5, 99, 1, 88, 9, 77, 3])[::2]
+        values, indices = topk_loop(a, 2)
+        self.assertFalse(a.flags.c_contiguous)
+        self.assertTrue(np.array_equal(values, np.array([9, 5])))
         self.assertTrue(np.array_equal(values, a[indices]))
 
 class BinarySearchTests(unittest.TestCase):
@@ -191,6 +217,13 @@ class BinarySearchTests(unittest.TestCase):
         self.assertEqual(index, 3)  
         self.assertTrue(exist)
 
+    def test_non_contiguous_stride(self):
+        a = np.array([1, 99, 3, 88, 5, 77, 7])[::2]
+        index, exist = binary_search_loop(a, 5)
+        self.assertFalse(a.flags.c_contiguous)
+        self.assertEqual(index, 2)
+        self.assertTrue(exist)
+
 class QuickSelectTests(unittest.TestCase):
 
     def test_basic(self):
@@ -220,6 +253,11 @@ class QuickSelectTests(unittest.TestCase):
     def test_negative(self):
         a = np.array([-3, -1, -4, -1, -5])
         self.assertEqual(quickselect_loop(a, 4), -1)
+
+    def test_non_contiguous_stride(self):
+        a = np.array([5, 99, 1, 88, 9, 77, 3])[::2]
+        self.assertFalse(a.flags.c_contiguous)
+        self.assertEqual(quickselect_loop(a, 2), 5)
 
 if __name__ == '__main__':
     unittest.main()
