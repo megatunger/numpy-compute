@@ -354,7 +354,7 @@ def main():
     all_results = {}
 
     for group_name in BENCHMARKS:
-        all_results[group_name] = run_benchmark_group(group_name, repeats=5)
+        all_results[group_name] = run_benchmark_group(group_name, repeats=100)
 
     return all_results
 
