@@ -49,7 +49,7 @@ def validate_options(x, options, x_name="input"):
     
     return x, options
 
-def _validate_vector(a: np.ndarray) -> None:
+def validate_vector(a: np.ndarray) -> None:
     """
     Validates that input a is a vector, and doesn't contain any NaN values.
     Used in other files.
@@ -72,9 +72,9 @@ def _validate_vector(a: np.ndarray) -> None:
         if np.isnan(a).any():
             raise ValueError(f"The input vector contains NaN values!")
 
-def _validate_vectors(a: np.ndarray, b: np.ndarray) -> None:
+def validate_vectors(a: np.ndarray, b: np.ndarray) -> None:
     """
-    Validates that inputs `a` and `b` are vectors, have the same shape, and don't contain
+    Validates that inputs `a` and `b` have the same shape, and don't contain
     any NaN values.
  
     Parameters
@@ -126,7 +126,7 @@ def euclidean_distance(a: np.ndarray, b: np.ndarray) -> float:
     Time  : O(n) because numpy's np.sum
     Space : O(n) for the intermediate a - b.
     """    
-    _validate_vectors(a, b)
+    validate_vectors(a, b)
     return np.sqrt(np.sum((a - b) ** 2))
 
 def manhattan_distance(a: np.ndarray, b: np.ndarray) -> float:
@@ -156,7 +156,7 @@ def manhattan_distance(a: np.ndarray, b: np.ndarray) -> float:
     Time  : O(n) because numpy's np.sum and np.abs are both O(n)
     Space : O(n) for the intermediate a - b.
     """    
-    _validate_vectors(a, b)
+    validate_vectors(a, b)
     return np.sum(np.abs(a - b))
 
 def chebyshev_distance(a: np.ndarray, b: np.ndarray) -> float:
@@ -186,7 +186,7 @@ def chebyshev_distance(a: np.ndarray, b: np.ndarray) -> float:
     Time  : O(n) because numpy's np.sum and np.max are both O(n)
     Space : O(n) for the intermediate a - b.
     """    
-    _validate_vectors(a, b)
+    validate_vectors(a, b)
     return np.max(np.abs(a - b))
 
 def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
@@ -217,7 +217,7 @@ def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
     Time  : O(n) because numpy's np.linalg.norm and np.dot are both O(n) (for vectors).
     Space : O(n) for the intermediate normalised arrays norm_a, norm_b.
     """    
-    _validate_vectors(a, b)
+    validate_vectors(a, b)
     a_flat, b_flat = a.flatten(), b.flatten()
     norm_a, norm_b = np.linalg.norm(a_flat), np.linalg.norm(b_flat)
     if norm_a == 0 or norm_b == 0:
