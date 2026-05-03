@@ -276,7 +276,7 @@ def confusion_matrix(y_true : np.ndarray, y_pred : np.ndarray, labels=None) -> n
 
     return y_true @ y_pred.transpose()
 
-def mean_squared_error(y_true : np.ndarray, y_pred : np.ndarray) -> float:
+def mean_squared_error(y_true : np.ndarray, y_pred : np.ndarray, axis=None):
     """Mean squared error regression loss.
 
     Read more in the :ref:`User Guide <mean_squared_error>`.
@@ -298,4 +298,4 @@ def mean_squared_error(y_true : np.ndarray, y_pred : np.ndarray) -> float:
     y_true, y_pred = validate_metrics_array(y_true, y_pred)
 
     error = (y_true - y_pred).astype(np.float32)
-    return float((error ** 2).mean())
+    return (error ** 2).mean(axis=axis)

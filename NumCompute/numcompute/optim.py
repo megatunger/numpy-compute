@@ -64,15 +64,16 @@ def jacobian(F, x, h=1e-5, method="central"):
     m = f_at_x.shape[1]
 
     J = np.zeros((m, x.size))
-
     # A Jacobian row is the gradient of one output component of F.
     for output_index in range(m):
+        print("output_index", output_index)
         def component_function(points, output_index=output_index):
             values = np.asarray(F(points), dtype=float)
+            print(values.shape)
             if values.ndim != 2 or values.shape[0] != points.shape[0]:
                 raise ValueError("F must return shape (batch_size, m).")
             return values[:, output_index]
 
-        J[output_index, :] = grad(component_function, x, h=h, method=method)
+        J[output_index, :] = grad(component_function, x[np.newaxis, :], h=h, method=method)
 
     return J
