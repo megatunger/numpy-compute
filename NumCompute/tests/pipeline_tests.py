@@ -25,6 +25,18 @@ class DummyEstimator:
         return np.full(X.shape[0], self.mean_target)
 
 
+class CountingTransformer:
+    def __init__(self):
+        self.transform_calls = 0
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X):
+        self.transform_calls += 1
+        return X + 1
+
+
 class TestPipeline(unittest.TestCase):
     def setUp(self):
         self.X = np.array([[1.0, 2.0], [3.0, 4.0]])
@@ -57,6 +69,19 @@ class TestPipeline(unittest.TestCase):
         expected = self.X + 2
 
         np.testing.assert_array_equal(transformed, expected)
+
+    def test_fit_transform_transforms_each_step_once(self):
+        first = CountingTransformer()
+        second = CountingTransformer()
+        pipe = Pipeline([
+            ("first", first),
+            ("second", second),
+        ])
+
+        pipe.fit_transform(self.X)
+
+        self.assertEqual(first.transform_calls, 1)
+        self.assertEqual(second.transform_calls, 1)
 
     def test_pipeline_works_with_existing_preprocessors(self):
         X = np.array([
