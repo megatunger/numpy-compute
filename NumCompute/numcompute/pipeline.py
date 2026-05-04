@@ -167,10 +167,16 @@ class Pipeline:
             Time is fit plus transform cost. Space is the largest intermediate
             array plus fitted step storage.
         """
-        self.fit(X, y)
+        data = X
 
-        transformed_data = self.transform(X)
-        return transformed_data
+        for step_name, step_obj in self.steps:
+            self._require_method(step_obj, "fit", step_name)
+            self._require_method(step_obj, "transform", step_name)
+
+            step_obj.fit(data, y)
+            data = step_obj.transform(data)
+
+        return data
 
     def predict(self, X):
         """Transform input data and predict with the final step.
