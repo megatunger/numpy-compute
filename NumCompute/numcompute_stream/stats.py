@@ -1,4 +1,4 @@
-"""Streaming statistics with incremental chunk updates."""
+"""Stats that update chunk by chunk instead of needing all the data at once"""
 
 import numpy as np
 
@@ -6,9 +6,14 @@ from numcompute.utils import validate_array_like, validate_non_empty_array
 
 
 class RunningStats:
-    """Per-feature running mean and variance (Welford's algorithm)."""
+    """Keeps track of mean and variance as new data comes in (uses Welford's method)"""
 
     def __init__(self, ddof=0):
+        """Start with empty stats
+
+        ddof - basically controls variance formula, 0 is same as np.var, 1 is
+        same as when you do np.std(..., ddof=1) for sample std
+        """
         self.ddof = ddof
         self.n = 0  # how many rows we've seen total
         self.mean_ = None  # running average per column
@@ -16,7 +21,16 @@ class RunningStats:
         self._m2 = None  # hidden helper — sum of squared gaps from the mean
 
     def update(self, X_chunk):
-        """Incorporate a batch of samples. X_chunk shape: (n_samples, n_features)."""
+        """Feed in one chunk and update the running stats
+
+        X_chunk - your new data, can be 2d (rows x features) or just a 1d list
+        (we treat that as one feature column)
+
+        Returns self so you can do stats.update(a).update(b)
+
+        Raises ValueError if chunk is empty, wrong shape, or different number
+        of columns than before
+        """
         # step 1: sanity check — needs to be a real non-empty array
         X = validate_array_like(X_chunk, name="X_chunk")
         validate_non_empty_array(X, name="X_chunk")
@@ -67,7 +81,12 @@ class RunningStats:
         return self
 
     def result(self):
-        """Return mean_ and std_ per feature."""
+        """Give back mean and std for each feature
+
+        Returns (mean_, std_) as two arrays
+
+        Raises ValueError if you haven't called update yet
+        """
         if self.n == 0:
             raise ValueError("No samples have been added")
 
@@ -76,7 +95,7 @@ class RunningStats:
         return self.mean_.copy(), std_.copy()
 
     def reset(self):
-        """Clear accumulated state."""
+        """Clear everything and go back to empty"""
         self.n = 0
         self.mean_ = None
         self.var_ = None
@@ -94,16 +113,29 @@ class RunningStats:
 
 
 class StreamingHistogram:
-    """Incrementally accumulate a histogram over streamed data."""
+    """Histogram that you can build up over multiple chunks"""
 
     def __init__(self, bins=10, range=None):
+        """Start an empty histogram
+
+        bins - how many bins, or pass bin edges like np.histogram
+        range - optional (min, max), stuff outside gets ignored, if None we
+        pick edges from the first chunk
+        """
         self.bins = bins
         self.range = range
         self.bin_edges_ = None  # where the bucket walls are
         self.counts_ = None  # how many values landed in each bucket
 
     def update(self, X_chunk):
-        """Add samples from a chunk to the running histogram."""
+        """Add more values into the histogram
+
+        X_chunk - array of values, any shape is fine we flatten it
+
+        Returns self
+
+        Raises ValueError if empty
+        """
         # step 1: validate and flatten to a simple 1d list of values
         X = validate_array_like(X_chunk, name="X_chunk")
         validate_non_empty_array(X, name="X_chunk")
@@ -122,20 +154,31 @@ class StreamingHistogram:
         return self
 
     def result(self):
-        """Return accumulated counts and bin edges."""
+        """Return the histogram so far
+
+        Returns (counts_, bin_edges_)
+
+        Raises ValueError if no data added yet
+        """
         if self.counts_ is None:
             raise ValueError("No samples have been added")
 
         return self.counts_.copy(), self.bin_edges_.copy()
 
     def reset(self):
-        """Clear accumulated counts and bin edges."""
+        """Reset counts and bin edges"""
         self.bin_edges_ = None
         self.counts_ = None
         return self
 
 
 def update_stats(stats, X_chunk):
-    """Update a streaming stats object that exposes ``update``."""
+    """Quick helper - just calls stats.update(X_chunk) for you
+
+    stats - any object with an update method (RunningStats, StreamingHistogram, etc)
+    X_chunk - the new data to add
+
+    Returns the stats object back
+    """
     # just a shortcut — hand the chunk to whatever stats object you have
     return stats.update(X_chunk)
