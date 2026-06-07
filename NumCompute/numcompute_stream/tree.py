@@ -1,6 +1,8 @@
 """Decision tree classifier with streaming partial_fit"""
 
-from numcompute.utils import validate_options
+import numpy as np
+
+from numcompute.utils import validate_array_like, validate_non_empty_array, validate_options
 
 
 class _Node:
@@ -60,7 +62,40 @@ class DecisionTreeClassifier:
 
         Raises ValueError if X/y empty or shapes don't match
         """
-        raise NotImplementedError
+        # step 1: sanity check inputs
+        X = validate_array_like(X, name="X").astype(float)
+        y = validate_array_like(y, name="y")
+        validate_non_empty_array(X, name="X")
+        validate_non_empty_array(y, name="y")
+
+        if X.ndim != 2:
+            raise ValueError("DecisionTreeClassifier expects 2D input for X")
+        if y.ndim != 1:
+            y = y.ravel()
+        if X.shape[0] != y.shape[0]:
+            raise ValueError("X and y must have the same number of samples")
+
+        # step 2: boot the tree on first chunk
+        if self.tree_ is None:
+            self.tree_ = _Node(depth=0)
+
+        # step 3: remember all label classes seen so far
+        chunk_classes = np.unique(y)
+        if self.classes_ is None:
+            self.classes_ = chunk_classes
+        else:
+            self.classes_ = np.unique(np.concatenate([self.classes_, chunk_classes]))
+
+        # step 4: send each row down to a leaf and stash it there
+        for xi, yi in zip(X, y):
+            leaf = self._find_leaf(self.tree_, xi)
+            leaf._X.append(xi)
+            leaf._y.append(yi)
+            leaf.class_counts[yi] = leaf.class_counts.get(yi, 0) + 1
+            leaf.n_samples += 1
+
+        self.tree_.n_samples += X.shape[0]
+        return self
 
     def predict(self, X):
         """Predict class label for each row
@@ -82,3 +117,11 @@ class DecisionTreeClassifier:
         Returns self
         """
         return self.partial_fit(X, y)
+
+    def _find_leaf(self, node, x):
+        while not node.is_leaf:
+            if x[node.feature_index] <= node.threshold:
+                node = node.left
+            else:
+                node = node.right
+        return node
