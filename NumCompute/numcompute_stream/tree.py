@@ -95,6 +95,9 @@ class DecisionTreeClassifier:
             leaf.n_samples += 1
 
         self.tree_.n_samples += X.shape[0]
+
+        # step 5: try splitting any leaf that has enough data
+        self._grow(self.tree_)
         return self
 
     def predict(self, X):
@@ -106,7 +109,16 @@ class DecisionTreeClassifier:
 
         Raises ValueError if the tree hasn't been fit yet
         """
-        raise NotImplementedError
+        if self.tree_ is None:
+            raise ValueError("DecisionTreeClassifier is not fitted")
+
+        X = validate_array_like(X, name="X").astype(float)
+        if X.ndim == 1:
+            X = X.reshape(1, -1)
+        elif X.ndim != 2:
+            raise ValueError("DecisionTreeClassifier expects 2D input for X")
+
+        return np.array([self._predict_one(xi) for xi in X])
 
     def fit(self, X, y):
         """Learn from all of X at once (calls partial_fit internally)
@@ -125,3 +137,119 @@ class DecisionTreeClassifier:
             else:
                 node = node.right
         return node
+
+    def _predict_one(self, x):
+        leaf = self._find_leaf(self.tree_, x)
+        return leaf.majority_class()
+
+    def _grow(self, node):
+        if node.is_leaf:
+            self._maybe_split(node)
+        else:
+            self._grow(node.left)
+            self._grow(node.right)
+
+    def _maybe_split(self, node):
+        if node.depth >= self.max_depth:
+            return
+        if node.n_samples < self.min_samples_split:
+            return
+
+        X = np.asarray(node._X, dtype=float)
+        y = np.asarray(node._y)
+
+        if len(np.unique(y)) == 1:
+            return
+
+        feature_indices = self._feature_indices(X.shape[1])
+        best = self._best_split(X, y, feature_indices)
+        if best is None:
+            return
+
+        feature_index, threshold = best
+        left_mask = X[:, feature_index] <= threshold
+        right_mask = ~left_mask
+
+        if left_mask.sum() == 0 or right_mask.sum() == 0:
+            return
+
+        node.feature_index = feature_index
+        node.threshold = threshold
+        node.left = _Node(depth=node.depth + 1)
+        node.right = _Node(depth=node.depth + 1)
+
+        for xi, yi, is_left in zip(X, y, left_mask):
+            child = node.left if is_left else node.right
+            child._X.append(xi)
+            child._y.append(yi)
+            child.class_counts[yi] = child.class_counts.get(yi, 0) + 1
+            child.n_samples += 1
+
+        node._X = []
+        node._y = []
+
+        self._grow(node.left)
+        self._grow(node.right)
+
+    def _feature_indices(self, n_features):
+        if self.max_features is None:
+            return list(range(n_features))
+        return list(range(min(self.max_features, n_features)))
+
+    def _best_split(self, X, y, feature_indices):
+        parent_impurity = self._impurity(y)
+        best_score = np.inf
+        best_split = None
+
+        for feature_index in feature_indices:
+            values = np.unique(X[:, feature_index])
+            if values.size <= 1:
+                continue
+
+            thresholds = (values[:-1] + values[1:]) / 2.0
+            for threshold in thresholds:
+                left_mask = X[:, feature_index] <= threshold
+                if left_mask.all() or (~left_mask).all():
+                    continue
+
+                y_left = y[left_mask]
+                y_right = y[~left_mask]
+                weighted = (
+                    (y_left.size / y.size) * self._impurity(y_left)
+                    + (y_right.size / y.size) * self._impurity(y_right)
+                )
+                gain = parent_impurity - weighted
+
+                if gain <= 0:
+                    continue
+
+                if best_split is None:
+                    best_score = weighted
+                    best_split = (feature_index, threshold)
+                    continue
+
+                if weighted < best_score - 1e-12:
+                    best_score = weighted
+                    best_split = (feature_index, threshold)
+                elif np.isclose(weighted, best_score):
+                    if feature_index < best_split[0] or (
+                        feature_index == best_split[0]
+                        and threshold < best_split[1]
+                    ):
+                        best_score = weighted
+                        best_split = (feature_index, threshold)
+
+        return best_split
+
+    def _impurity(self, y):
+        if y.size == 0:
+            return 0.0
+
+        _, counts = np.unique(y, return_counts=True)
+        probs = counts / counts.sum()
+
+        if self.criterion == "gini":
+            return 1.0 - np.sum(probs ** 2)
+
+        entropy = -np.sum(probs * np.log2(probs))
+        return entropy
