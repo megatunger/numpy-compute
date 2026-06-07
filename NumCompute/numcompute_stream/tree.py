@@ -1,5 +1,29 @@
 """Decision tree classifier with streaming partial_fit"""
 
+from numcompute.utils import validate_options
+
+
+class _Node:
+    """One node in the tree — either a leaf holding samples or an internal split"""
+
+    def __init__(self, depth=0):
+        self.depth = depth
+        self.n_samples = 0
+        self.class_counts = {}
+        self.feature_index = None
+        self.threshold = None
+        self.left = None
+        self.right = None
+        self._X = []
+        self._y = []
+
+    @property
+    def is_leaf(self):
+        return self.left is None
+
+    def majority_class(self):
+        return max(self.class_counts, key=self.class_counts.get)
+
 
 class DecisionTreeClassifier:
     """Simple decision tree that grows as new chunks arrive"""
@@ -18,12 +42,13 @@ class DecisionTreeClassifier:
         criterion - 'gini' or 'entropy' for split scoring
         max_features - how many features to try at each split, None means all
         """
+        validate_options(criterion, ("gini", "entropy"), x_name="criterion")
         self.max_depth = max_depth
         self.min_samples_split = min_samples_split
         self.criterion = criterion
         self.max_features = max_features
-        self.tree_ = None  # root node once we have data
-        self.classes_ = None  # label classes seen so far
+        self.tree_ = None
+        self.classes_ = None
 
     def partial_fit(self, X, y):
         """Route this chunk through the tree and grow splits if needed
