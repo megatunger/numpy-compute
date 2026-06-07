@@ -1,5 +1,7 @@
 """Preprocessing that learns from data chunk by chunk"""
 
+from numcompute.preprocessing import OneHotEncoder as BatchOneHotEncoder
+from numcompute.preprocessing import SimpleImputer as BatchSimpleImputer
 from numcompute.preprocessing import StandardScaler as BatchStandardScaler
 from numcompute.utils import validate_array_like, validate_non_empty_array
 from numcompute_stream.stats import RunningStats
@@ -54,4 +56,75 @@ class StandardScaler(BatchStandardScaler):
         self.mean_ = None
         self.scale_ = None
         self._running_stats.reset()
+        return self.partial_fit(X, y)
+
+
+class SimpleImputer(BatchSimpleImputer):
+    """SimpleImputer you can train one chunk at a time"""
+
+    def __init__(self, strategy="mean"):
+        """Start unfitted
+
+        strategy - only 'mean' supported for now (same as batch version)
+        """
+        super().__init__(strategy=strategy)
+        self.n_samples_seen_ = 0  # running count of rows fed in
+
+    def partial_fit(self, X, y=None):
+        """Update fill values from one chunk of data
+
+        X - 2d array (n_samples, n_features), can contain NaN
+        y - not used
+
+        Returns self so you can chain partial_fit calls
+
+        Raises ValueError if X is empty or not 2d
+        """
+        raise NotImplementedError
+
+    def fit(self, X, y=None):
+        """Reset stats and learn from X in one go (calls partial_fit internally)
+
+        X - 2d array (n_samples, n_features)
+        y - not used
+
+        Returns self
+        """
+        self.n_samples_seen_ = 0
+        self.statistics_ = None
+        return self.partial_fit(X, y)
+
+
+class OneHotEncoder(BatchOneHotEncoder):
+    """OneHotEncoder that grows categories as new chunks arrive"""
+
+    def __init__(self, handle_unknown="error"):
+        """Start unfitted
+
+        handle_unknown - 'error' or 'ignore' (same as batch version)
+        """
+        super().__init__(handle_unknown=handle_unknown)
+
+    def partial_fit(self, X, y=None):
+        """Add categories seen in this chunk
+
+        X - 2d categorical array (n_samples, n_features)
+        y - not used
+
+        Returns self so you can chain partial_fit calls
+
+        Raises ValueError if X is empty or not 2d
+        """
+        raise NotImplementedError
+
+    def fit(self, X, y=None):
+        """Reset categories and learn from X in one go (calls partial_fit internally)
+
+        X - 2d categorical array (n_samples, n_features)
+        y - not used
+
+        Returns self
+        """
+        self.categories_ = None
+        self.n_features_in_ = None
         return self.partial_fit(X, y)
