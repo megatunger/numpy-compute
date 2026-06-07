@@ -1,5 +1,7 @@
 """Metrics that build up over chunks instead of needing all labels at once"""
 
+from numcompute.utils import validate_metrics_array
+
 
 class StreamingAccuracy:
     """Keeps a running accuracy score as new predictions come in"""
@@ -19,7 +21,16 @@ class StreamingAccuracy:
 
         Raises ValueError if arrays are empty, wrong shape, or incompatible
         """
-        raise NotImplementedError
+        # step 1: sanity check — same shape, non-empty, compatible dtypes
+        y_true, y_pred = validate_metrics_array(y_true, y_pred)
+
+        # step 2: count how many got it right in this chunk
+        chunk_correct = (y_true == y_pred).sum()
+
+        # step 3: add chunk totals to the running counts
+        self.correct_ += int(chunk_correct)
+        self.total_ += y_true.size
+        return self
 
     def result(self):
         """Get accuracy so far as a float between 0 and 1
@@ -28,7 +39,10 @@ class StreamingAccuracy:
 
         Raises ValueError if you haven't called update yet
         """
-        raise NotImplementedError
+        if self.total_ == 0:
+            raise ValueError("No samples have been added")
+
+        return self.correct_ / self.total_
 
     def reset(self):
         """Clear counts and go back to zero"""
