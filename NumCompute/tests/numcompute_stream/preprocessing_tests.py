@@ -132,8 +132,8 @@ class TestStreamingOneHotEncoder(unittest.TestCase):
         unknown = np.array([["purple", "S"]], dtype=object)
         transformed = encoder.transform(unknown)
 
-        self.assertEqual(transformed.shape[1], sum(len(c) for c in encoder.categories_))
-        np.testing.assert_array_equal(transformed, np.zeros((1, transformed.shape[1])))
+        batch = BatchOneHotEncoder(handle_unknown="ignore").fit(self.chunk1)
+        np.testing.assert_array_equal(transformed, batch.transform(unknown))
 
     def test_partial_fit_empty_raises(self):
         encoder = OneHotEncoder()

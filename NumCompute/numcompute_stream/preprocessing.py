@@ -1,5 +1,7 @@
 """Preprocessing that learns from data chunk by chunk"""
 
+import numpy as np
+
 from numcompute.preprocessing import OneHotEncoder as BatchOneHotEncoder
 from numcompute.preprocessing import SimpleImputer as BatchSimpleImputer
 from numcompute.preprocessing import StandardScaler as BatchStandardScaler
@@ -69,6 +71,8 @@ class SimpleImputer(BatchSimpleImputer):
         """
         super().__init__(strategy=strategy)
         self.n_samples_seen_ = 0  # running count of rows fed in
+        self._sum_ = None  # running sum per column (ignoring NaN)
+        self._count_ = None  # how many non-NaN values per column
 
     def partial_fit(self, X, y=None):
         """Update fill values from one chunk of data
@@ -80,7 +84,36 @@ class SimpleImputer(BatchSimpleImputer):
 
         Raises ValueError if X is empty or not 2d
         """
-        raise NotImplementedError
+        # step 1: same checks as batch fit — 2d, non-empty, float
+        X = validate_array_like(X, name="X").astype(float)
+        validate_non_empty_array(X, name="X")
+        if X.ndim != 2:
+            raise ValueError("SimpleImputer expects 2D input.")
+
+        n_features = X.shape[1]
+
+        # step 2: first chunk? set up empty sum/count arrays
+        if self._sum_ is None:
+            self._sum_ = np.zeros(n_features, dtype=float)
+            self._count_ = np.zeros(n_features, dtype=float)
+
+        # step 3: add non-NaN values from this chunk into running totals
+        for j in range(n_features):
+            col = X[:, j]
+            valid = ~np.isnan(col)
+            self._sum_[j] += np.sum(col[valid])
+            self._count_[j] += valid.sum()
+
+        # step 4: fill value per column = sum / count (NaN if column had no values yet)
+        self.statistics_ = np.divide(
+            self._sum_,
+            self._count_,
+            out=np.full(n_features, np.nan, dtype=float),
+            where=self._count_ > 0,
+        )
+
+        self.n_samples_seen_ += X.shape[0]
+        return self
 
     def fit(self, X, y=None):
         """Reset stats and learn from X in one go (calls partial_fit internally)
@@ -92,6 +125,8 @@ class SimpleImputer(BatchSimpleImputer):
         """
         self.n_samples_seen_ = 0
         self.statistics_ = None
+        self._sum_ = None
+        self._count_ = None
         return self.partial_fit(X, y)
 
 
@@ -115,7 +150,32 @@ class OneHotEncoder(BatchOneHotEncoder):
 
         Raises ValueError if X is empty or not 2d
         """
-        raise NotImplementedError
+        # step 1: same checks as batch fit — 2d, non-empty
+        X = validate_array_like(X, name="X")
+        validate_non_empty_array(X, name="X")
+        if X.ndim != 2:
+            raise ValueError("OneHotEncoder expects 2D input.")
+
+        n_features = X.shape[1]
+
+        # step 2: first chunk? store sorted unique categories per column
+        if self.categories_ is None:
+            self.n_features_in_ = n_features
+            self.categories_ = [np.unique(X[:, i]) for i in range(n_features)]
+        else:
+            # later chunks must have same number of columns
+            if n_features != self.n_features_in_:
+                raise ValueError(
+                    "Input has different number of features than fit data."
+                )
+
+            # step 3: merge in any new category values and keep them sorted
+            for i in range(n_features):
+                self.categories_[i] = np.unique(
+                    np.concatenate([self.categories_[i], np.unique(X[:, i])])
+                )
+
+        return self
 
     def fit(self, X, y=None):
         """Reset categories and learn from X in one go (calls partial_fit internally)
