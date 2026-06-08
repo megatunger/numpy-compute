@@ -11,7 +11,7 @@ numcompute_stream is the package for this assignment. It sits next to the origin
 | Module        | What it does                                                  |
 | ------------- | ------------------------------------------------------------- |
 | stats         | Running mean/var (Welford), histograms, update_stats          |
-| metrics       | StreamingAccuracy — accuracy that builds up chunk by chunk    |
+| metrics       | Accuracy, AUC, confusion matrix, rolling metrics, precision, recall, F1 |
 | preprocessing | StandardScaler, SimpleImputer, OneHotEncoder with partial_fit |
 | pipeline      | Chains preprocessors + model, partial_fit on each step        |
 | tree          | DecisionTreeClassifier — grows splits as new chunks arrive    |
@@ -63,6 +63,7 @@ demo/stream_demo.ipynb walks through the full flow on wine data:
 - load csv and binarise quality (>= 6 is good)
 - split into chunks of 50
 - train tree vs bagging with StreamTrainer
+- check cumulative AUC and rolling-window metrics
 - plot accuracy over chunks
 
 Open it from the NumCompute folder or demo/ — the first cell fixes the import path.
@@ -83,4 +84,4 @@ It also saves plots to benchmark/plots/
 
     pytest tests/numcompute_stream/
 
-There are 70+ tests covering stats, metrics, preprocessing, pipeline, tree, ensemble, stream, and visualise.
+There are 90+ tests covering stats, metrics, preprocessing, pipeline, tree, ensemble, stream, and visualise.
