@@ -18,19 +18,19 @@ class TestBaggingClassifier(unittest.TestCase):
         self.y = np.array([0, 0, 0, 1, 1, 1])
 
     def test_init_creates_n_estimators(self):
-        bag = BaggingClassifier(n_estimators=5, max_depth=2, random_state=0)
+        bag = BaggingClassifier(n_estimators=5, max_depth=2, random_state=42)
 
         self.assertEqual(len(bag.estimators_), 5)
         self.assertEqual(bag.estimators_[0].max_depth, 2)
         self.assertIsNone(bag.classes_)
 
     def test_partial_fit_returns_self(self):
-        bag = BaggingClassifier(n_estimators=3, random_state=0)
+        bag = BaggingClassifier(n_estimators=3, random_state=42)
         out = bag.partial_fit(self.X, self.y)
         self.assertIs(out, bag)
 
     def test_all_estimators_get_fitted(self):
-        bag = BaggingClassifier(n_estimators=4, random_state=0)
+        bag = BaggingClassifier(n_estimators=4, random_state=42)
         bag.partial_fit(self.X, self.y)
 
         for tree in bag.estimators_:
@@ -38,7 +38,7 @@ class TestBaggingClassifier(unittest.TestCase):
             self.assertGreaterEqual(tree.tree_.n_samples, 1)
 
     def test_predict_returns_labels_from_training_classes(self):
-        bag = BaggingClassifier(n_estimators=5, random_state=0)
+        bag = BaggingClassifier(n_estimators=5, random_state=42)
         bag.partial_fit(self.X, self.y)
         y_pred = bag.predict(self.X)
 
@@ -47,7 +47,7 @@ class TestBaggingClassifier(unittest.TestCase):
             self.assertIn(label, self.y)
 
     def test_two_partial_fits_keep_all_trees_updated(self):
-        bag = BaggingClassifier(n_estimators=3, random_state=1)
+        bag = BaggingClassifier(n_estimators=3, random_state=42)
         bag.partial_fit(self.X[:3], self.y[:3])
         counts_after_one = [tree.tree_.n_samples for tree in bag.estimators_]
         bag.partial_fit(self.X[3:], self.y[3:])

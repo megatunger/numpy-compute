@@ -46,7 +46,7 @@ def build_models():
             ("scale", StandardScaler()),
             (
                 "model",
-                BaggingClassifier(n_estimators=5, max_depth=5, random_state=0),
+                BaggingClassifier(n_estimators=5, max_depth=5, random_state=42),
             ),
         ]),
     }
